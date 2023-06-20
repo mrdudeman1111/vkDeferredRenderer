@@ -1,0 +1,3 @@
+/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles/game.dir
+/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles/edit_cache.dir
+/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles/rebuild_cache.dir
