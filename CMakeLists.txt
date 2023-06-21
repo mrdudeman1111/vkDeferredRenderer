@@ -11,5 +11,5 @@ find_package(glm REQUIRED)
 
 add_executable(game ${SOURCES})
 
-target_link_libraries(game vulkan glfw glm assimp)
+target_link_libraries(game vulkan glfw glm assimp VulkanMemoryAllocator)
 

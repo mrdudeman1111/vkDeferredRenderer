@@ -94,6 +94,11 @@
 				"backtrace" : 2,
 				"fragment" : "-lassimp",
 				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lVulkanMemoryAllocator",
+				"role" : "libraries"
 			}
 		],
 		"language" : "CXX"

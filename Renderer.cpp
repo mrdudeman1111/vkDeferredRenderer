@@ -1,9 +1,160 @@
 #include <Renderer.h>
 
+#include <algorithm>
 #include <cstring>
 #include <stdexcept>
 #include <string>
 #include <vulkan/vulkan_core.h>
+#include <vulkan/vk_enum_string_helper.h>
+
+/*
+  Transfer Queues!!!!!!!!!!!
+*/
+
+/*        Helpers         */
+void Renderer::CreateImage(Texture* Image, VkFormat Format, VkImageUsageFlags Usage)
+{
+  VkResult Res;
+
+  VkImageCreateInfo ImageCI{};
+  ImageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  ImageCI.usage = Usage;
+  ImageCI.extent = VkExtent3D{Width, Height, 1};
+  ImageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
+  ImageCI.format = Format;
+  ImageCI.imageType = VK_IMAGE_TYPE_2D;
+  ImageCI.samples = VK_SAMPLE_COUNT_1_BIT;
+  ImageCI.mipLevels = 1;
+  ImageCI.arrayLayers = 1;
+  ImageCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  ImageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+  if((Res = vkCreateImage(Device, &ImageCI, nullptr, &Image->Image)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("Failed to create image with error: " + std::to_string(Res));
+  }
+
+  VkMemoryRequirements MemReq;
+  vkGetImageMemoryRequirements(Device, Image->Image, &MemReq);
+
+  uint32_t Alignment = 0;
+
+  for(uint32_t i = 0; Alignment == 0; i++)
+  {
+    if((MemReq.alignment*i) >= TextureMemory.Used)
+    {
+      Alignment = MemReq.alignment*i;
+    }
+  }
+
+  vkBindImageMemory(Device, Image->Image, TextureMemory.Memory, VkDeviceSize(Alignment));
+}
+
+void Renderer::CreateImageView(VkImageView* ImageView, VkImage* Image, VkFormat Format, VkImageViewType ViewType, VkImageAspectFlags AspectMask)
+{
+  VkResult Res;
+
+  VkImageViewCreateInfo ViewCI{};
+  ViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  ViewCI.format = Format;
+  ViewCI.image = *Image;
+  ViewCI.viewType = ViewType;
+  ViewCI.components.r = VK_COMPONENT_SWIZZLE_R;
+  ViewCI.components.g = VK_COMPONENT_SWIZZLE_G;
+  ViewCI.components.b = VK_COMPONENT_SWIZZLE_B;
+  ViewCI.components.a = VK_COMPONENT_SWIZZLE_A;
+  ViewCI.subresourceRange.aspectMask = AspectMask;
+  ViewCI.subresourceRange.baseMipLevel = 0;
+  ViewCI.subresourceRange.baseArrayLayer = 0;
+  ViewCI.subresourceRange.layerCount = 1;
+  ViewCI.subresourceRange.levelCount = 1;
+
+  if((Res = vkCreateImageView(Device, &ViewCI, nullptr, ImageView)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("Failed to create image view with error: " + std::to_string(Res));
+  }
+}
+
+void Renderer::GetMemoryIndices()
+{
+  VkPhysicalDeviceMemoryProperties MemProps;
+  vkGetPhysicalDeviceMemoryProperties(PhysicalDevice, &MemProps);
+
+  uint64_t BiggestDeviceHeap = 0;
+  uint64_t BiggestHostHeap = 0;
+
+  for(uint32_t i = 0; i < MemProps.memoryHeapCount; i++)
+  {
+    if(MemProps.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT && MemProps.memoryHeaps[i].size > BiggestDeviceHeap)
+    {
+      MemoryInfo.VRamHeap = i;
+      BiggestDeviceHeap = MemProps.memoryHeaps[i].size;
+    }
+    if(MemProps.memoryHeaps[i].size > BiggestHostHeap && i != MemoryInfo.VRamHeap)
+    {
+      MemoryInfo.DRamHeap = i;
+      BiggestHostHeap = MemProps.memoryHeaps[i].size;
+    }
+  }
+
+  MemoryInfo.VRamHeapSizeTotal = BiggestDeviceHeap;
+  MemoryInfo.DRamHeapSizeTotal = BiggestHostHeap;
+
+  uint32_t BiggestDeviceType = 0;
+  uint32_t BiggestHostType = 0;
+
+  uint32_t BiggestTransferType = 0;
+
+  bool amdMemory = false;
+
+  for(uint32_t i = 0; i < DeviceExtensions.size(); i++)
+  {
+    if(!strcmp(DeviceExtensions[i], "VK_AMD_device_coherent_memory"))
+    {
+      amdMemory = true;
+      std::cout << "VK_AMD_device\n";
+      break;
+    }
+  }
+
+  bool FoundVRam = false;
+  bool FoundDRam = false;
+
+  for(uint32_t i = 0; i < MemProps.memoryTypeCount; i++)
+  {
+    if(MemProps.memoryTypes[i].heapIndex == MemoryInfo.VRamHeap && MemProps.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT && !FoundVRam)
+    {
+      MemoryInfo.VRamIndex = i;
+      FoundVRam = true;
+    }
+    if(MemProps.memoryTypes[i].heapIndex == MemoryInfo.DRamHeap && MemProps.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT && !FoundDRam)
+    {
+      MemoryInfo.DRamIndex = i;
+      FoundDRam = true;
+    }
+
+    // this will find a Memory heap and type that can be used for transfer. This is most often found on AMD
+    // But we can function if we don't find it.
+    if(
+      MemProps.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+      && MemProps.memoryHeaps[MemProps.memoryTypes[i].heapIndex].size > BiggestTransferType
+      && MemProps.memoryTypes[i].heapIndex != MemoryInfo.DRamHeap
+      && MemProps.memoryTypes[i].heapIndex != MemoryInfo.VRamHeap
+      && amdMemory)
+    {
+      MemoryInfo.TransferHeap = MemProps.memoryTypes[i].heapIndex;
+      MemoryInfo.TransferSizeTotal = MemProps.memoryHeaps[MemProps.memoryTypes[i].heapIndex].size;
+      MemoryInfo.TransferIndex = i;
+    }
+  }
+
+  return;
+}
+
+
+
+
+
 
 VkCommandBuffer* CommandDispatch::GetCommandBuffer(VkDevice* pDevice)
 {
@@ -129,8 +280,11 @@ bool Renderer::RequestDevExt(const char* ExtName)
   return false;
 }
 
-void Renderer::Init()
+void Renderer::Init(uint32_t inWidth, uint32_t inHeight)
 {
+  Width = inWidth;
+  Height = inHeight;
+
   glfwInit();
   uint32_t glfwExtCount;
   const char** glfwExt = glfwGetRequiredInstanceExtensions(&glfwExtCount);
@@ -209,7 +363,7 @@ void Renderer::Init()
 
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  Window = glfwCreateWindow(1280, 720, "Game", NULL, NULL);
+  Window = glfwCreateWindow(Width, Height, "Game", NULL, NULL);
 
   glfwCreateWindowSurface(Instance, Window, nullptr, &Surface);
 }
@@ -250,6 +404,58 @@ bool Renderer::CreateDevice()
   GraphicsDispatch.PoolFlags = eTypeGraphics;
   ComputeDispatch.PoolFlags = eTypeCompute;
 
+  // Get all the memory information from the physical device and choose our preferred heaps and types
+  GetMemoryIndices();
+
+  VkMemoryAllocateInfo AllocInfo{};
+  AllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  AllocInfo.memoryTypeIndex = MemoryInfo.VRamIndex;
+  AllocInfo.allocationSize = std::max((MemoryInfo.VRamHeapSizeTotal/64), (u_long)250000000);
+
+  BufferMemory.Total = AllocInfo.allocationSize;
+  BufferMemory.Available = AllocInfo.allocationSize;
+  BufferMemory.Used = 0;
+
+  if((Res = vkAllocateMemory(Device, &AllocInfo, nullptr, &BufferMemory.Memory)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("failed to allocate buffer memory with error: " + std::to_string(Res));
+  }
+
+  AllocInfo.allocationSize = std::max(MemoryInfo.VRamHeapSizeTotal/4, (u_long)500000000);
+
+  TextureMemory.Total = AllocInfo.allocationSize;
+  TextureMemory.Available = AllocInfo.allocationSize;
+  TextureMemory.Used = 0;
+
+  if((Res = vkAllocateMemory(Device, &AllocInfo, nullptr, &TextureMemory.Memory)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("failed to allocate texture memory with error: " + std::to_string(Res));
+  }
+
+  AllocInfo.allocationSize = MemoryInfo.DRamHeapSizeTotal/8;
+  AllocInfo.memoryTypeIndex = MemoryInfo.DRamIndex;
+  HostMemory.Total = AllocInfo.allocationSize;
+  HostMemory.Available = AllocInfo.allocationSize;
+  HostMemory.Used = 0;
+
+  if((Res = vkAllocateMemory(Device, &AllocInfo, nullptr, &HostMemory.Memory)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("failed to allocate host memory with error: " + std::to_string(Res));
+  }
+
+  if(MemoryInfo.TransferIndex != -1)
+  {
+    AllocInfo.allocationSize = MemoryInfo.TransferSizeTotal/4;
+    TransferMemory.Total = AllocInfo.allocationSize;
+    TransferMemory.Available = AllocInfo.allocationSize;
+    TransferMemory.Used = 0;
+
+    if((Res = vkAllocateMemory(Device, &AllocInfo, nullptr, &TransferMemory.Memory)) != VK_SUCCESS)
+    {
+      throw std::runtime_error("failed to allocate memory for transfer with error: " + std::to_string(Res));
+    }
+  }
+
   return true;
 }
 
@@ -287,19 +493,16 @@ void Renderer::CreateSwapchain(VkPresentModeKHR PresentMode)
   uint32_t SwapchainFormatCount;
   vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice, Surface, &SwapchainFormatCount, nullptr);
   std::vector<VkSurfaceFormatKHR> SurfaceFormats(SwapchainFormatCount);
-  vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice, Surface, &SwapchainFormatCount, SurfaceFormats.data());
-
-  for(uint32_t i = 0; i < SwapchainFormatCount; i++)
+  if((Res = vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice, Surface, &SwapchainFormatCount, SurfaceFormats.data())) != VK_SUCCESS)
   {
-    if(SurfaceFormats[i].format == VK_FORMAT_R8G8B8_SRGB)
-    {
-      SurfaceFormat = SurfaceFormats[i];
-    }
+    throw std::runtime_error("Failed to get surface formats");
   }
 
+  SurfaceFormat = SurfaceFormats[0];
+
   VkExtent2D SwapExtent;
-  SwapExtent.width = 1280;
-  SwapExtent.height = 720;
+  SwapExtent.width = Width;
+  SwapExtent.height = Height;
 
   VkSwapchainCreateInfoKHR SwapCI{};
   SwapCI.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -339,23 +542,135 @@ void Renderer::CreateRenderPass()
     and the normal buffer tells use where a face is pointing, because we are making a *3D* Renderer, we need to store 3 values, so we will use an RGB format.
   */
 
-  VkAttachmentDescription ColorDesc{};
-  VkAttachmentDescription DepthDesc{};
-  VkAttachmentDescription NormDesc{};
+  VkResult Res;
 
-  VkAttachmentReference pColor, pDepth, pNorm;
+  VkAttachmentReference AttRefs[3]; // Color, pos, norm
+  VkAttachmentReference pDepth;
+  VkAttachmentDescription Descriptions[4] = {{}, {}, {}, {}}; // Color, Pos, Depth, Normal
 
-  ColorDesc.format = SurfaceFormat.format;
-  ColorDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  ColorDesc.storeOp = VK_ATTACHMENT_STORE_OP_NONE;
-  ColorDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-  ColorDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  ColorDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  ColorDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_NONE;
-  ColorDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  Descriptions[0].format = SurfaceFormat.format;
+  Descriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  Descriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  Descriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
+  Descriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  Descriptions[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  Descriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  Descriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 
-  DepthDesc.format = VK_FORMAT_D16_UNORM;
-  DepthDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  DepthDesc.storeOp = VK_ATTACHMENT_STORE_OP_NONE;
+  Descriptions[2].format = VK_FORMAT_D16_UNORM;
+  Descriptions[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  Descriptions[2].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  Descriptions[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  Descriptions[2].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  Descriptions[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  Descriptions[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+  Descriptions[2].samples = VK_SAMPLE_COUNT_1_BIT;
+
+  Descriptions[3].format = VK_FORMAT_R16G16B16A16_SFLOAT;
+  Descriptions[3].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  Descriptions[3].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  Descriptions[3].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  Descriptions[3].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  Descriptions[3].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  Descriptions[3].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  Descriptions[3].samples = VK_SAMPLE_COUNT_1_BIT;
+
+  Descriptions[1].format = VK_FORMAT_R16G16B16A16_SFLOAT;
+  Descriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  Descriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  Descriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  Descriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  Descriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  Descriptions[1].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  Descriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
+
+  AttRefs[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  AttRefs[0].attachment = 0;
+
+  AttRefs[1].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  AttRefs[1].attachment = 1;
+
+  pDepth.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  pDepth.attachment = 2;
+
+  AttRefs[2].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  AttRefs[2].attachment = 3;
+
+  VkSubpassDescription Subpasses[2];
+
+  Subpasses[0] = {}; // fill with 0/defaults
+  Subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  Subpasses[0].colorAttachmentCount = 3;
+  Subpasses[0].pColorAttachments = AttRefs;
+  Subpasses[0].pDepthStencilAttachment = &pDepth;
+
+  Subpasses[1] = {};
+  Subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+  Subpasses[1].colorAttachmentCount = 3;
+  Subpasses[1].pColorAttachments = AttRefs;
+  Subpasses[1].pDepthStencilAttachment = &pDepth;
+
+  VkSubpassDependency LightingDependencies{};
+  LightingDependencies.srcSubpass = 0;
+  LightingDependencies.dstSubpass = 1;
+  LightingDependencies.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+  LightingDependencies.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+  LightingDependencies.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+  LightingDependencies.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+  // the fragment shader from the G-pass needs to finish writing to the Framebuffer before the lighting pass is executed
+
+  VkRenderPassCreateInfo RenderpassInfo{};
+  RenderpassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+  RenderpassInfo.subpassCount = 2;
+  RenderpassInfo.pSubpasses = Subpasses;
+  RenderpassInfo.attachmentCount = 4;
+  RenderpassInfo.pAttachments = Descriptions;
+  RenderpassInfo.dependencyCount = 1;
+  RenderpassInfo.pDependencies = &LightingDependencies;
+
+  if((Res = vkCreateRenderPass(Device, &RenderpassInfo, nullptr, &Renderpass)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("failed to create renderpass with error: " + std::to_string(Res));
+  }
+}
+
+void Renderer::CreateFrameBuffers()
+{
+  VkResult Res;
+
+  SwapchainImageViews.resize(SwapchainImages.size());
+  DepthImages.resize(SwapchainImages.size()); DepthImageViews.resize(SwapchainImages.size());
+  NormImages.resize(SwapchainImages.size()); NormImageViews.resize(SwapchainImages.size());
+  PosImages.resize(SwapchainImages.size()); PosImageViews.resize(SwapchainImageViews.size());
+
+  for(uint32_t i = 0; i < SwapchainImages.size(); i++)
+  {
+    CreateImage(&DepthImages[i], VK_FORMAT_D16_UNORM, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+    CreateImage(&NormImages[i], VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+
+    CreateImage(&PosImages[i], VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+
+    CreateImageView(&SwapchainImageViews[i], &SwapchainImages[i], SurfaceFormat.format, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
+    CreateImageView(&PosImageViews[i], &PosImages[i].Image, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
+    CreateImageView(&DepthImageViews[i], &DepthImages[i].Image, VK_FORMAT_D16_UNORM, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_DEPTH_BIT);
+    CreateImageView(&NormImageViews[i], &NormImages[i].Image, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
+
+    VkImageView Atts[4] = { SwapchainImageViews[i], PosImageViews[i], DepthImageViews[i], NormImageViews[i] };
+
+    VkFramebufferCreateInfo FrameBufferCI{};
+    FrameBufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    FrameBufferCI.width = Width;
+    FrameBufferCI.height = Height;
+    FrameBufferCI.renderPass = Renderpass;
+    FrameBufferCI.attachmentCount = 4;
+    FrameBufferCI.pAttachments = Atts;
+    FrameBufferCI.layers = 1;
+
+    if((Res = vkCreateFramebuffer(Device, &FrameBufferCI, nullptr, &FrameBuffers[i])) != VK_SUCCESS)
+    {
+      throw std::runtime_error("Failed to create framebuffer with error: " + std::to_string(Res));
+    }
+  }
 }
 
