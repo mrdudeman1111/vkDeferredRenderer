@@ -1,8 +1,7 @@
-CMakeFiles/game.dir/Renderer.cpp.o: \
- /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.cpp \
- /usr/include/stdc-predef.h \
- /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.h \
- /usr/include/c++/13.1.1/cstddef \
+CMakeFiles/game.dir/Pipeline.cpp.o: \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.cpp \
+ /usr/include/stdc-predef.h /usr/include/c++/13.1.1/iostream \
+ /usr/include/c++/13.1.1/bits/requires_hosted.h \
  /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/c++config.h \
  /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -11,15 +10,13 @@ CMakeFiles/game.dir/Renderer.cpp.o: \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
  /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/cpu_defines.h \
  /usr/include/c++/13.1.1/pstl/pstl_config.h \
- /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stddef.h \
- /usr/include/c++/13.1.1/iostream \
- /usr/include/c++/13.1.1/bits/requires_hosted.h \
  /usr/include/c++/13.1.1/ostream /usr/include/c++/13.1.1/ios \
  /usr/include/c++/13.1.1/iosfwd /usr/include/c++/13.1.1/bits/stringfwd.h \
  /usr/include/c++/13.1.1/bits/memoryfwd.h \
  /usr/include/c++/13.1.1/bits/postypes.h /usr/include/c++/13.1.1/cwchar \
  /usr/include/wchar.h /usr/include/bits/libc-header-start.h \
  /usr/include/bits/floatn.h /usr/include/bits/floatn-common.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stddef.h \
  /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stdarg.h \
  /usr/include/bits/wchar.h /usr/include/bits/types/wint_t.h \
  /usr/include/bits/types/mbstate_t.h \
@@ -119,6 +116,7 @@ CMakeFiles/game.dir/Renderer.cpp.o: \
  /usr/include/c++/13.1.1/bits/charconv.h \
  /usr/include/c++/13.1.1/bits/basic_string.tcc \
  /usr/include/c++/13.1.1/bits/memory_resource.h \
+ /usr/include/c++/13.1.1/cstddef \
  /usr/include/c++/13.1.1/bits/uses_allocator.h \
  /usr/include/c++/13.1.1/bits/uses_allocator_args.h \
  /usr/include/c++/13.1.1/tuple \
@@ -141,8 +139,10 @@ CMakeFiles/game.dir/Renderer.cpp.o: \
  /usr/include/c++/13.1.1/bits/stl_uninitialized.h \
  /usr/include/c++/13.1.1/bits/stl_vector.h \
  /usr/include/c++/13.1.1/bits/stl_bvector.h \
- /usr/include/c++/13.1.1/bits/vector.tcc /usr/include/c++/13.1.1/thread \
- /usr/include/c++/13.1.1/bits/std_thread.h \
+ /usr/include/c++/13.1.1/bits/vector.tcc \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.h \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.h \
+ /usr/include/c++/13.1.1/thread /usr/include/c++/13.1.1/bits/std_thread.h \
  /usr/include/c++/13.1.1/bits/unique_ptr.h \
  /usr/include/c++/13.1.1/bits/this_thread_sleep.h \
  /usr/include/c++/13.1.1/bits/chrono.h /usr/include/c++/13.1.1/ratio \
@@ -299,14 +299,10 @@ CMakeFiles/game.dir/Renderer.cpp.o: \
  /usr/include/glm/packing.hpp /usr/include/glm/detail/func_packing.inl \
  /usr/include/glm/detail/type_half.hpp \
  /usr/include/glm/detail/type_half.inl /usr/include/glm/integer.hpp \
- /usr/include/glm/detail/func_integer.inl \
- /usr/include/c++/13.1.1/algorithm \
- /usr/include/c++/13.1.1/bits/stl_algo.h \
- /usr/include/c++/13.1.1/bits/algorithmfwd.h \
- /usr/include/c++/13.1.1/bits/stl_heap.h \
- /usr/include/c++/13.1.1/bits/uniform_int_dist.h \
- /usr/include/c++/13.1.1/bits/stl_tempbuf.h \
- /usr/include/c++/13.1.1/pstl/glue_algorithm_defs.h \
- /usr/include/c++/13.1.1/pstl/execution_defs.h \
- /usr/include/c++/13.1.1/cstring /usr/include/string.h \
- /usr/include/strings.h /usr/include/vulkan/vk_enum_string_helper.h
+ /usr/include/glm/detail/func_integer.inl /usr/include/c++/13.1.1/map \
+ /usr/include/c++/13.1.1/bits/stl_tree.h \
+ /usr/include/c++/13.1.1/ext/aligned_buffer.h \
+ /usr/include/c++/13.1.1/bits/node_handle.h \
+ /usr/include/c++/13.1.1/bits/stl_map.h \
+ /usr/include/c++/13.1.1/bits/stl_multimap.h \
+ /usr/include/c++/13.1.1/bits/erase_if.h

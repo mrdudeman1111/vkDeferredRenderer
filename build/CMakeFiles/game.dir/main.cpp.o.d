@@ -299,4 +299,4 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/glm/packing.hpp /usr/include/glm/detail/func_packing.inl \
  /usr/include/glm/detail/type_half.hpp \
  /usr/include/glm/detail/type_half.inl /usr/include/glm/integer.hpp \
- /usr/include/glm/detail/func_integer.inl /usr/include/vk_mem_alloc.h
+ /usr/include/glm/detail/func_integer.inl

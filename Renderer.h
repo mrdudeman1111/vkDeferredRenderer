@@ -11,12 +11,13 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
-#define VMA_VULKAN_VERSION 1002000
-#include <vk_mem_alloc.h>
+// 4 DescSets at a time
 
 // Parralel matrix computation when computing bone spaces per frmae
 class Renderer;
 class CommandDispatch;
+struct Texture;
+struct Buffer;
 
 enum ePoolType
 {
@@ -29,7 +30,7 @@ class CommandDispatch
 {
   friend Renderer;
 public:
-  // The Command buffed returned from this function is already recording, when done just submit the buffer and the Renderer will stop the recording and submit it down the queue. (don't submit a command buffer to a queue that it wasn't allocated from)
+  // The Command buffer returned from this function is already recording, when done just submit the buffer and the Renderer will stop the recording and submit it down the queue. (don't submit a command buffer to a queue that it wasn't allocated from, you can also just call vkEndCommandBuffer())
   VkCommandBuffer* GetCommandBuffer(VkDevice* pDevice);
 
   // This function takes in one VkCommandBuffer* from GetCommandBuffer, ends it, and then submits it.
@@ -62,19 +63,30 @@ public:
 
 struct MemoryBlock
 {
-  public:
-    VkDeviceMemory Memory;
+public:
+  VkDeviceMemory Memory;
 
-    VkDeviceSize Available;
-    VkDeviceSize Used;
-    VkDeviceSize Total;
+  VkDeviceSize Available;
+  VkDeviceSize Used;
+  VkDeviceSize Total;
 };
 
 struct Texture
 {
   public:
   VkImage Image;
-  VmaAllocation Alloc;
+
+  uint32_t MemorySize;
+  uint32_t Offset;
+};
+
+struct Buffer
+{
+public:
+  VkBuffer Buffer;
+
+  uint32_t MemorySize;
+  uint32_t Offset;
 };
 
 class Renderer
@@ -82,6 +94,8 @@ class Renderer
 public:
   CommandDispatch GraphicsDispatch;
   CommandDispatch ComputeDispatch;
+
+  VkDevice Device;
 
   Renderer()
   {
@@ -111,13 +125,14 @@ public:
 
   void CreateImage(Texture* Image, VkFormat Format, VkImageUsageFlags Usage);
   void CreateImageView(VkImageView* ImageView, VkImage* Image, VkFormat Format, VkImageViewType ViewType, VkImageAspectFlags AspectMask);
+
+  void CreateDescriptorSet(VkDescriptorSetLayout* Layouts, uint32_t LayoutCount);
+  void DestroyDescriptorSet(VkDescriptorSet* DescriptorSet);
 private:
   void GetMemoryIndices();
 
   uint32_t Width;
   uint32_t Height;
-
-  VmaAllocator Allocator;
 
   std::vector<const char*> InstanceLayers;
   std::vector<const char*> InstanceExtensions;
@@ -129,7 +144,6 @@ private:
 
   std::vector<const char*> DeviceLayers;
   std::vector<const char*> DeviceExtensions;
-  VkDevice Device;
 
   // Memory stuff
     MemoryIndices MemoryInfo;
@@ -137,6 +151,7 @@ private:
     MemoryBlock TransferMemory;
     MemoryBlock TextureMemory;
     MemoryBlock BufferMemory;
+    MemoryBlock MeshMemory;
     MemoryBlock HostMemory;
 
   VkSurfaceFormatKHR SurfaceFormat;
@@ -157,6 +172,11 @@ private:
   VkSubpassDescription LightingPass;
   VkRenderPass Renderpass;
 
+  VkFence Fence;
+  VkSemaphore Semaphore;
+
   GLFWwindow* Window;
+
+  std::vector<Texture> Textures;
 };
 

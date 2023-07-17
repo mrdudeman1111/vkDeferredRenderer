@@ -3,22 +3,25 @@
 #include <Renderer.h>
 #include <vulkan/vulkan_core.h>
 
+
+// idea: seperate memory blocks, so have "slots" for different locations where textures and buffers can be stored within memory blocks.
+
 int main()
 {
-  Renderer R;
+  Renderer Renderer;
 
-  R.RequestInstLayer("VK_LAYER_KHRONOS_validation");
-  R.RequestInstExt("VK_KHR_surface");
+  Renderer.RequestInstLayer("VK_LAYER_KHRONOS_validation");
+  Renderer.RequestInstExt("VK_KHR_surface");
 
-  R.Init(1280, 720);
+  Renderer.Init(1280, 720);
 
-  R.RequestDevExt("VK_KHR_swapchain");
-  R.CreateDevice();
+  Renderer.RequestDevExt("VK_KHR_swapchain");
+  Renderer.CreateDevice();
 
-  //R.CreateCmdBuffers();
-  //R.CreateSwapchain(VK_PRESENT_MODE_IMMEDIATE_KHR);
-  //R.CreateRenderPass();
-  //R.CreateFrameBuffers();
+  Renderer.CreateCmdBuffers();
+  Renderer.CreateSwapchain(VK_PRESENT_MODE_IMMEDIATE_KHR);
+  Renderer.CreateRenderPass();
+  Renderer.CreateFrameBuffers();
 
   std::cout << "Success\n";
 }

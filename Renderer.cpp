@@ -1,11 +1,18 @@
 #include <Renderer.h>
-
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vk_enum_string_helper.h>
+
+// VkImage
+// VkFormat
+// VkLayout
+// VkDescriptorSetLayout
+// VkDescriptorSet
 
 /*
   Transfer Queues!!!!!!!!!!!
@@ -48,6 +55,12 @@ void Renderer::CreateImage(Texture* Image, VkFormat Format, VkImageUsageFlags Us
   }
 
   vkBindImageMemory(Device, Image->Image, TextureMemory.Memory, VkDeviceSize(Alignment));
+
+  Image->Offset = Alignment;
+  Image->MemorySize = MemReq.size;
+
+  TextureMemory.Available -= VkDeviceSize(Alignment);
+  TextureMemory.Used += VkDeviceSize(Alignment);
 }
 
 void Renderer::CreateImageView(VkImageView* ImageView, VkImage* Image, VkFormat Format, VkImageViewType ViewType, VkImageAspectFlags AspectMask)
@@ -73,6 +86,10 @@ void Renderer::CreateImageView(VkImageView* ImageView, VkImage* Image, VkFormat 
   {
     throw std::runtime_error("Failed to create image view with error: " + std::to_string(Res));
   }
+}
+
+void Renderer::CreateDescriptorSet(VkDescriptorSetLayout* Layouts, uint32_t LayoutCount)
+{
 }
 
 void Renderer::GetMemoryIndices()
@@ -112,7 +129,6 @@ void Renderer::GetMemoryIndices()
     if(!strcmp(DeviceExtensions[i], "VK_AMD_device_coherent_memory"))
     {
       amdMemory = true;
-      std::cout << "VK_AMD_device\n";
       break;
     }
   }
@@ -150,11 +166,6 @@ void Renderer::GetMemoryIndices()
 
   return;
 }
-
-
-
-
-
 
 VkCommandBuffer* CommandDispatch::GetCommandBuffer(VkDevice* pDevice)
 {
@@ -432,6 +443,17 @@ bool Renderer::CreateDevice()
     throw std::runtime_error("failed to allocate texture memory with error: " + std::to_string(Res));
   }
 
+  AllocInfo.allocationSize = std::max(MemoryInfo.VRamHeapSizeTotal/16, (u_long)30000000);
+
+  MeshMemory.Total = AllocInfo.allocationSize;
+  MeshMemory.Available = AllocInfo.allocationSize;
+  MeshMemory.Used = 0;
+
+  if((Res = vkAllocateMemory(Device, &AllocInfo, nullptr, &MeshMemory.Memory)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("failed to allocate mesh memory with error: " + std::to_string(Res));
+  }
+
   AllocInfo.allocationSize = MemoryInfo.DRamHeapSizeTotal/8;
   AllocInfo.memoryTypeIndex = MemoryInfo.DRamIndex;
   HostMemory.Total = AllocInfo.allocationSize;
@@ -454,6 +476,21 @@ bool Renderer::CreateDevice()
     {
       throw std::runtime_error("failed to allocate memory for transfer with error: " + std::to_string(Res));
     }
+  }
+
+  VkSemaphoreCreateInfo SemInf{};
+  VkFenceCreateInfo FenceInf{};
+
+  SemInf.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  FenceInf.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+  if((Res = vkCreateSemaphore(Device, &SemInf, nullptr, &Semaphore)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("Failed to create semaphore with error: " + std::to_string(Res));
+  }
+  if((Res = vkCreateFence(Device, &FenceInf, nullptr, &Fence)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("Failed to create fence with error: " + std::to_string(Res));
   }
 
   return true;
@@ -642,6 +679,8 @@ void Renderer::CreateFrameBuffers()
   DepthImages.resize(SwapchainImages.size()); DepthImageViews.resize(SwapchainImages.size());
   NormImages.resize(SwapchainImages.size()); NormImageViews.resize(SwapchainImages.size());
   PosImages.resize(SwapchainImages.size()); PosImageViews.resize(SwapchainImageViews.size());
+
+  FrameBuffers.resize(SwapchainImages.size());
 
   for(uint32_t i = 0; i < SwapchainImages.size(); i++)
   {
