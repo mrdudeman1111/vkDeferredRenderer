@@ -140,7 +140,10 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/c++/13.1.1/bits/ostream.tcc /usr/include/c++/13.1.1/istream \
  /usr/include/c++/13.1.1/bits/istream.tcc \
  /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.h \
- /usr/include/c++/13.1.1/vector \
+ /usr/include/glm/fwd.hpp /usr/include/glm/detail/qualifier.hpp \
+ /usr/include/glm/detail/setup.hpp /usr/include/c++/13.1.1/cassert \
+ /usr/include/assert.h /usr/include/glm/simd/platform.h \
+ /usr/include/c++/13.1.1/cstdint /usr/include/c++/13.1.1/vector \
  /usr/include/c++/13.1.1/bits/stl_uninitialized.h \
  /usr/include/c++/13.1.1/bits/stl_vector.h \
  /usr/include/c++/13.1.1/bits/stl_bvector.h \
@@ -149,19 +152,18 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/c++/13.1.1/bits/unique_ptr.h \
  /usr/include/c++/13.1.1/bits/this_thread_sleep.h \
  /usr/include/c++/13.1.1/bits/chrono.h /usr/include/c++/13.1.1/ratio \
- /usr/include/c++/13.1.1/cstdint /usr/include/c++/13.1.1/limits \
- /usr/include/c++/13.1.1/ctime \
+ /usr/include/c++/13.1.1/limits /usr/include/c++/13.1.1/ctime \
  /usr/include/c++/13.1.1/bits/parse_numbers.h \
- /usr/include/vulkan/vulkan.h /usr/include/vulkan/vk_platform.h \
- /usr/include/vulkan/vulkan_core.h \
+ /usr/include/vulkan/vulkan_core.h /usr/include/vulkan/vk_platform.h \
  /usr/include/vk_video/vulkan_video_codec_h264std.h \
  /usr/include/vk_video/vulkan_video_codec_h264std_decode.h \
  /usr/include/vk_video/vulkan_video_codec_h265std.h \
  /usr/include/vk_video/vulkan_video_codec_h265std_decode.h \
- /usr/include/vulkan/vulkan_core.h /usr/include/glm/glm.hpp \
- /usr/include/glm/detail/_fixes.hpp /usr/include/c++/13.1.1/cmath \
- /usr/include/math.h /usr/include/bits/math-vector.h \
- /usr/include/bits/libm-simd-decl-stubs.h \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.h \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.h \
+ /usr/include/glm/glm.hpp /usr/include/glm/detail/_fixes.hpp \
+ /usr/include/c++/13.1.1/cmath /usr/include/math.h \
+ /usr/include/bits/math-vector.h /usr/include/bits/libm-simd-decl-stubs.h \
  /usr/include/bits/flt-eval-method.h /usr/include/bits/fp-logb.h \
  /usr/include/bits/fp-fast.h \
  /usr/include/bits/mathcalls-helper-functions.h \
@@ -179,9 +181,7 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/c++/13.1.1/tr1/poly_hermite.tcc \
  /usr/include/c++/13.1.1/tr1/poly_laguerre.tcc \
  /usr/include/c++/13.1.1/tr1/riemann_zeta.tcc \
- /usr/include/glm/detail/setup.hpp /usr/include/c++/13.1.1/cassert \
- /usr/include/assert.h /usr/include/glm/simd/platform.h \
- /usr/include/c++/13.1.1/climits \
+ /usr/include/glm/detail/setup.hpp /usr/include/c++/13.1.1/climits \
  /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/limits.h \
  /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/syslimits.h \
  /usr/include/limits.h /usr/include/bits/posix1_lim.h \
@@ -189,9 +189,7 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/bits/posix2_lim.h /usr/include/bits/xopen_lim.h \
  /usr/include/bits/uio_lim.h /usr/include/c++/13.1.1/cfloat \
  /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/float.h \
- /usr/include/glm/fwd.hpp /usr/include/glm/detail/qualifier.hpp \
- /usr/include/glm/detail/setup.hpp /usr/include/glm/vec2.hpp \
- /usr/include/glm/ext/vector_bool2.hpp \
+ /usr/include/glm/vec2.hpp /usr/include/glm/ext/vector_bool2.hpp \
  /usr/include/glm/detail/type_vec2.hpp \
  /usr/include/glm/detail/type_vec2.inl \
  /usr/include/glm/detail/compute_vector_relational.hpp \
@@ -299,4 +297,65 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/glm/packing.hpp /usr/include/glm/detail/func_packing.inl \
  /usr/include/glm/detail/type_half.hpp \
  /usr/include/glm/detail/type_half.inl /usr/include/glm/integer.hpp \
- /usr/include/glm/detail/func_integer.inl
+ /usr/include/glm/detail/func_integer.inl /usr/include/vulkan/vulkan.h \
+ /usr/include/vulkan/vulkan_core.h /usr/include/c++/13.1.1/map \
+ /usr/include/c++/13.1.1/bits/stl_tree.h \
+ /usr/include/c++/13.1.1/ext/aligned_buffer.h \
+ /usr/include/c++/13.1.1/bits/node_handle.h \
+ /usr/include/c++/13.1.1/bits/stl_map.h \
+ /usr/include/c++/13.1.1/bits/stl_multimap.h \
+ /usr/include/c++/13.1.1/bits/erase_if.h \
+ /usr/include/assimp/BaseImporter.h /usr/include/assimp/Exceptional.h \
+ /usr/include/assimp/DefaultIOStream.h /usr/include/assimp/IOStream.hpp \
+ /usr/include/assimp/types.h /usr/include/string.h /usr/include/strings.h \
+ /usr/include/assimp/defs.h /usr/include/assimp/config.h \
+ /usr/include/assimp/vector2.h /usr/include/assimp/vector3.h \
+ /usr/include/assimp/color4.h /usr/include/assimp/matrix3x3.h \
+ /usr/include/assimp/matrix4x4.h /usr/include/assimp/quaternion.h \
+ /usr/include/c++/13.1.1/cstring /usr/include/assimp/vector2.inl \
+ /usr/include/assimp/vector3.inl /usr/include/assimp/color4.inl \
+ /usr/include/assimp/matrix3x3.inl /usr/include/c++/13.1.1/algorithm \
+ /usr/include/c++/13.1.1/bits/stl_algo.h \
+ /usr/include/c++/13.1.1/bits/algorithmfwd.h \
+ /usr/include/c++/13.1.1/bits/stl_heap.h \
+ /usr/include/c++/13.1.1/bits/uniform_int_dist.h \
+ /usr/include/c++/13.1.1/bits/stl_tempbuf.h \
+ /usr/include/c++/13.1.1/pstl/glue_algorithm_defs.h \
+ /usr/include/c++/13.1.1/pstl/execution_defs.h \
+ /usr/include/assimp/matrix4x4.inl /usr/include/assimp/MathFunctions.h \
+ /usr/include/assimp/quaternion.inl /usr/include/assimp/importerdesc.h \
+ /usr/include/assimp/TinyFormatter.h /usr/include/c++/13.1.1/sstream \
+ /usr/include/c++/13.1.1/bits/sstream.tcc \
+ /usr/include/assimp/ProgressHandler.hpp /usr/include/c++/13.1.1/set \
+ /usr/include/c++/13.1.1/bits/stl_set.h \
+ /usr/include/c++/13.1.1/bits/stl_multiset.h \
+ /usr/include/c++/13.1.1/memory \
+ /usr/include/c++/13.1.1/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/13.1.1/bits/align.h \
+ /usr/include/c++/13.1.1/bits/shared_ptr.h \
+ /usr/include/c++/13.1.1/bits/shared_ptr_base.h \
+ /usr/include/c++/13.1.1/bits/allocated_ptr.h \
+ /usr/include/c++/13.1.1/ext/concurrence.h \
+ /usr/include/c++/13.1.1/bits/shared_ptr_atomic.h \
+ /usr/include/c++/13.1.1/bits/atomic_base.h \
+ /usr/include/c++/13.1.1/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/13.1.1/backward/auto_ptr.h \
+ /usr/include/c++/13.1.1/pstl/glue_memory_defs.h \
+ /usr/include/assimp/mesh.h /usr/include/assimp/aabb.h \
+ /usr/include/assimp/scene.h /usr/include/assimp/texture.h \
+ /usr/include/assimp/Compiler/pushpack1.h \
+ /usr/include/assimp/Compiler/poppack1.h /usr/include/assimp/light.h \
+ /usr/include/assimp/camera.h /usr/include/assimp/material.h \
+ /usr/include/assimp/material.inl /usr/include/assimp/anim.h \
+ /usr/include/assimp/metadata.h /usr/include/assimp/ParsingUtils.h \
+ /usr/include/assimp/StringComparison.h /usr/include/assimp/ai_assert.h \
+ /usr/include/assimp/StringUtils.h /usr/include/c++/13.1.1/cstdarg \
+ /usr/include/c++/13.1.1/locale \
+ /usr/include/c++/13.1.1/bits/locale_facets_nonio.h \
+ /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/time_members.h \
+ /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/messages_members.h \
+ /usr/include/libintl.h /usr/include/c++/13.1.1/bits/codecvt.h \
+ /usr/include/c++/13.1.1/bits/locale_facets_nonio.tcc \
+ /usr/include/c++/13.1.1/bits/locale_conv.h \
+ /usr/include/c++/13.1.1/iomanip \
+ /usr/include/c++/13.1.1/bits/quoted_string.h

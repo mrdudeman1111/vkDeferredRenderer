@@ -153,6 +153,30 @@ Descriptor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Descriptor.cpp.s
 .PHONY : Descriptor.cpp.s
 
+Mesh.o: Mesh.cpp.o
+.PHONY : Mesh.o
+
+# target to build an object file
+Mesh.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Mesh.cpp.o
+.PHONY : Mesh.cpp.o
+
+Mesh.i: Mesh.cpp.i
+.PHONY : Mesh.i
+
+# target to preprocess a source file
+Mesh.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Mesh.cpp.i
+.PHONY : Mesh.cpp.i
+
+Mesh.s: Mesh.cpp.s
+.PHONY : Mesh.s
+
+# target to generate assembly for a file
+Mesh.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Mesh.cpp.s
+.PHONY : Mesh.cpp.s
+
 Pipeline.o: Pipeline.cpp.o
 .PHONY : Pipeline.o
 
@@ -237,6 +261,9 @@ help:
 	@echo "... Descriptor.o"
 	@echo "... Descriptor.i"
 	@echo "... Descriptor.s"
+	@echo "... Mesh.o"
+	@echo "... Mesh.i"
+	@echo "... Mesh.s"
 	@echo "... Pipeline.o"
 	@echo "... Pipeline.i"
 	@echo "... Pipeline.s"

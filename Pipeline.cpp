@@ -1,9 +1,13 @@
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include <Pipeline.h>
 #include <vulkan/vulkan_core.h>
+
+Pipeline::Pipeline(VkDevice* pDev) : pDevice(pDev)
+{}
 
 void Pipeline::Init()
 {
@@ -11,8 +15,11 @@ void Pipeline::Init()
 
   VkPipelineLayoutCreateInfo LayoutInfo{};
   LayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  LayoutInfo.setLayoutCount = Recipe.DescriptorLayouts.size();
-  LayoutInfo.pSetLayouts = Recipe.DescriptorLayouts.data();
+
+  VkDescriptorSetLayout DescLay = Mat.GetLayout();
+
+  LayoutInfo.setLayoutCount = 1;
+  LayoutInfo.pSetLayouts = &DescLay;
 
   if((Res = vkCreatePipelineLayout(*pDevice, &LayoutInfo, nullptr, &PipeLayout)) != VK_SUCCESS)
   {
@@ -67,7 +74,7 @@ void Pipeline::Init()
   }
   PipeInfo.pRasterizationState = &Raster;
 
-  if((Res = vkCreateGraphicsPipelines(*pDevice, VK_NULL_HANDLE, 1, &PipeInfo, nullptr, &Pipeline)) != VK_SUCCESS)
+  if((Res = vkCreateGraphicsPipelines(*pDevice, VK_NULL_HANDLE, 1, &PipeInfo, nullptr, &Pipe)) != VK_SUCCESS)
   {
     throw std::runtime_error("Failed to create pipeline with error: " + std::to_string(Res));
   }
@@ -103,6 +110,7 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, VkRenderPass* pRP
   Recipe.StageInfos[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
   Recipe.StageInfos[1].pName = Mat.FragShader->EntryPoint;
   Recipe.StageInfos[1].module = Mat.FragShader->sModule;
+
   if(Mat.GeomShader)
   {
     Recipe.StageInfos[2].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -161,28 +169,11 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, VkRenderPass* pRP
   PassType = Type;
 }
 
-void Material::AddTexture(Texture* pTex, VkDescriptorSetLayoutBinding Binding, VkDescriptorType Type)
+void Material::AddResource(VkDescriptorSetLayoutBinding Binding, VkDescriptorType Type)
 {
-  pTextures.push_back(pTex);
-
   VkDescriptorPoolSize Size;
   Size.type = Type;
   Size.descriptorCount = 1;
-
-  LayoutCI.bindingCount++;
-
-  Bindings.push_back(Binding);
-}
-
-void Material::AddBuffer(Buffer* pBuff, VkDescriptorSetLayoutBinding Binding, VkDescriptorType Type)
-{
-  pBuffers.push_back(pBuff);
-
-  VkDescriptorPoolSize Size;
-  Size.type = Type;
-  Size.descriptorCount = 1;
-
-  LayoutCI.bindingCount++;
 
   Bindings.push_back(Binding);
 }
@@ -196,5 +187,24 @@ VkDescriptorPoolSize* Material::GetSizes(uint32_t MaxSets, uint32_t* pSizeCount)
   }
 
   return Sizes.data();
+}
+
+VkDescriptorSetLayout Material::GetLayout()
+{
+  VkResult Res;
+
+  VkDescriptorSetLayout Ret;
+
+  VkDescriptorSetLayoutCreateInfo LayoutCI{};
+  LayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  LayoutCI.bindingCount = Bindings.size();
+  LayoutCI.pBindings = Bindings.data();
+
+  if((Res = vkCreateDescriptorSetLayout(*pDevice, &LayoutCI, nullptr, &Ret)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("Failed to create layout in Material::GetLayout() with error " + std::to_string(Res));
+  }
+
+  return Ret;
 }
 

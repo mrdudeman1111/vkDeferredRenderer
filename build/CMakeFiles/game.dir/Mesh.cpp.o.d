@@ -1,7 +1,9 @@
-CMakeFiles/game.dir/Pipeline.cpp.o: \
- /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.cpp \
- /usr/include/stdc-predef.h /usr/include/c++/13.1.1/iostream \
- /usr/include/c++/13.1.1/bits/requires_hosted.h \
+CMakeFiles/game.dir/Mesh.cpp.o: \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.cpp \
+ /usr/include/stdc-predef.h \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.h \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.h \
+ /usr/include/c++/13.1.1/cstddef \
  /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/c++config.h \
  /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -10,13 +12,15 @@ CMakeFiles/game.dir/Pipeline.cpp.o: \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
  /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/cpu_defines.h \
  /usr/include/c++/13.1.1/pstl/pstl_config.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stddef.h \
+ /usr/include/c++/13.1.1/iostream \
+ /usr/include/c++/13.1.1/bits/requires_hosted.h \
  /usr/include/c++/13.1.1/ostream /usr/include/c++/13.1.1/ios \
  /usr/include/c++/13.1.1/iosfwd /usr/include/c++/13.1.1/bits/stringfwd.h \
  /usr/include/c++/13.1.1/bits/memoryfwd.h \
  /usr/include/c++/13.1.1/bits/postypes.h /usr/include/c++/13.1.1/cwchar \
  /usr/include/wchar.h /usr/include/bits/libc-header-start.h \
  /usr/include/bits/floatn.h /usr/include/bits/floatn-common.h \
- /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stddef.h \
  /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stdarg.h \
  /usr/include/bits/wchar.h /usr/include/bits/types/wint_t.h \
  /usr/include/bits/types/mbstate_t.h \
@@ -116,7 +120,6 @@ CMakeFiles/game.dir/Pipeline.cpp.o: \
  /usr/include/c++/13.1.1/bits/charconv.h \
  /usr/include/c++/13.1.1/bits/basic_string.tcc \
  /usr/include/c++/13.1.1/bits/memory_resource.h \
- /usr/include/c++/13.1.1/cstddef \
  /usr/include/c++/13.1.1/bits/uses_allocator.h \
  /usr/include/c++/13.1.1/bits/uses_allocator_args.h \
  /usr/include/c++/13.1.1/tuple \
@@ -139,11 +142,10 @@ CMakeFiles/game.dir/Pipeline.cpp.o: \
  /usr/include/c++/13.1.1/bits/stl_uninitialized.h \
  /usr/include/c++/13.1.1/bits/stl_vector.h \
  /usr/include/c++/13.1.1/bits/stl_bvector.h \
- /usr/include/c++/13.1.1/bits/vector.tcc \
- /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.h \
- /usr/include/glm/glm.hpp /usr/include/glm/detail/_fixes.hpp \
- /usr/include/c++/13.1.1/cmath /usr/include/math.h \
- /usr/include/bits/math-vector.h /usr/include/bits/libm-simd-decl-stubs.h \
+ /usr/include/c++/13.1.1/bits/vector.tcc /usr/include/glm/glm.hpp \
+ /usr/include/glm/detail/_fixes.hpp /usr/include/c++/13.1.1/cmath \
+ /usr/include/math.h /usr/include/bits/math-vector.h \
+ /usr/include/bits/libm-simd-decl-stubs.h \
  /usr/include/bits/flt-eval-method.h /usr/include/bits/fp-logb.h \
  /usr/include/bits/fp-fast.h \
  /usr/include/bits/mathcalls-helper-functions.h \
@@ -296,4 +298,61 @@ CMakeFiles/game.dir/Pipeline.cpp.o: \
  /usr/include/c++/13.1.1/bits/stl_map.h \
  /usr/include/c++/13.1.1/bits/stl_multimap.h \
  /usr/include/c++/13.1.1/bits/erase_if.h \
- /usr/include/vulkan/vulkan_core.h
+ /usr/include/assimp/BaseImporter.h /usr/include/assimp/Exceptional.h \
+ /usr/include/assimp/DefaultIOStream.h /usr/include/assimp/IOStream.hpp \
+ /usr/include/assimp/types.h /usr/include/string.h /usr/include/strings.h \
+ /usr/include/assimp/defs.h /usr/include/assimp/config.h \
+ /usr/include/assimp/vector2.h /usr/include/assimp/vector3.h \
+ /usr/include/assimp/color4.h /usr/include/assimp/matrix3x3.h \
+ /usr/include/assimp/matrix4x4.h /usr/include/assimp/quaternion.h \
+ /usr/include/c++/13.1.1/cstring /usr/include/assimp/vector2.inl \
+ /usr/include/assimp/vector3.inl /usr/include/assimp/color4.inl \
+ /usr/include/assimp/matrix3x3.inl /usr/include/c++/13.1.1/algorithm \
+ /usr/include/c++/13.1.1/bits/stl_algo.h \
+ /usr/include/c++/13.1.1/bits/algorithmfwd.h \
+ /usr/include/c++/13.1.1/bits/stl_heap.h \
+ /usr/include/c++/13.1.1/bits/uniform_int_dist.h \
+ /usr/include/c++/13.1.1/bits/stl_tempbuf.h \
+ /usr/include/c++/13.1.1/pstl/glue_algorithm_defs.h \
+ /usr/include/c++/13.1.1/pstl/execution_defs.h \
+ /usr/include/assimp/matrix4x4.inl /usr/include/assimp/MathFunctions.h \
+ /usr/include/assimp/quaternion.inl /usr/include/assimp/importerdesc.h \
+ /usr/include/assimp/TinyFormatter.h /usr/include/c++/13.1.1/sstream \
+ /usr/include/c++/13.1.1/bits/sstream.tcc \
+ /usr/include/assimp/ProgressHandler.hpp /usr/include/c++/13.1.1/set \
+ /usr/include/c++/13.1.1/bits/stl_set.h \
+ /usr/include/c++/13.1.1/bits/stl_multiset.h \
+ /usr/include/c++/13.1.1/memory \
+ /usr/include/c++/13.1.1/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/13.1.1/bits/align.h \
+ /usr/include/c++/13.1.1/bits/unique_ptr.h \
+ /usr/include/c++/13.1.1/bits/shared_ptr.h \
+ /usr/include/c++/13.1.1/bits/shared_ptr_base.h \
+ /usr/include/c++/13.1.1/bits/allocated_ptr.h \
+ /usr/include/c++/13.1.1/ext/concurrence.h \
+ /usr/include/c++/13.1.1/bits/shared_ptr_atomic.h \
+ /usr/include/c++/13.1.1/bits/atomic_base.h \
+ /usr/include/c++/13.1.1/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/13.1.1/backward/auto_ptr.h \
+ /usr/include/c++/13.1.1/pstl/glue_memory_defs.h \
+ /usr/include/assimp/mesh.h /usr/include/assimp/aabb.h \
+ /usr/include/assimp/scene.h /usr/include/assimp/texture.h \
+ /usr/include/assimp/Compiler/pushpack1.h \
+ /usr/include/assimp/Compiler/poppack1.h /usr/include/assimp/light.h \
+ /usr/include/assimp/camera.h /usr/include/assimp/material.h \
+ /usr/include/assimp/material.inl /usr/include/assimp/anim.h \
+ /usr/include/assimp/metadata.h /usr/include/assimp/ParsingUtils.h \
+ /usr/include/assimp/StringComparison.h /usr/include/assimp/ai_assert.h \
+ /usr/include/assimp/StringUtils.h /usr/include/c++/13.1.1/cstdarg \
+ /usr/include/c++/13.1.1/locale \
+ /usr/include/c++/13.1.1/bits/locale_facets_nonio.h \
+ /usr/include/c++/13.1.1/ctime \
+ /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/time_members.h \
+ /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/messages_members.h \
+ /usr/include/libintl.h /usr/include/c++/13.1.1/bits/codecvt.h \
+ /usr/include/c++/13.1.1/bits/locale_facets_nonio.tcc \
+ /usr/include/c++/13.1.1/bits/locale_conv.h \
+ /usr/include/c++/13.1.1/iomanip \
+ /usr/include/c++/13.1.1/bits/quoted_string.h \
+ /usr/include/vulkan/vulkan_core.h /usr/include/assimp/Importer.hpp \
+ /usr/include/assimp/postprocess.h

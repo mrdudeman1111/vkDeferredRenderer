@@ -1,15 +1,16 @@
+#pragma once
+
 #include <cstddef>
+#include <glm/fwd.hpp>
 #include <iostream>
 #include <vector>
 #include <thread>
-
-#include <vulkan/vulkan.h>
-
-#include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+#include <Mesh.h>
 
 // 4 DescSets at a time
 
@@ -23,6 +24,15 @@ enum ePoolType
 {
   eTypeGraphics,
   eTypeCompute
+};
+
+enum eMemoryType
+{
+  eTransferMemory = 1,
+  eTextureMemory = 2,
+  eBufferMemory = 3,
+  eMeshMemory = 4,
+  eHostMemory = 5
 };
 
 // Linux Implementation
@@ -66,41 +76,75 @@ struct MemoryBlock
 public:
   VkDeviceMemory Memory;
 
+  std::vector<Header*> Allocations;
+
   VkDeviceSize Available;
   VkDeviceSize Used;
   VkDeviceSize Total;
 };
 
-struct Texture
-{
-  public:
-  VkImage Image;
-
-  uint32_t MemorySize;
-  uint32_t Offset;
-};
-
-struct Buffer
+class Camera
 {
 public:
-  VkBuffer Buffer;
+  Camera(Renderer* R) : pRenderer(R) {}
 
-  uint32_t MemorySize;
-  uint32_t Offset;
+  union{
+    glm::mat4 World;
+    glm::mat4 View;
+    glm::mat4 Proj;
+  } CamDat;
+
+  void Update();
+  void PollInputs();
+
+  glm::vec3 Position = glm::vec3(0.f, 0.f, 10.f); // -z is forwards
+  glm::vec3 Rotation;
+  glm::mat4 CameraMat; // the camera matrix is the inverse of the view matrix, instead of transforming other things to it, it transforms itself relative to other things, therefore moving itself through space
+
+  double LastMousePos[2];
+
+  Buffer CameraBuffer;
+  void* BufferMemory;
+  VkDescriptorSet CamDescriptor;
+
+  Renderer* pRenderer;
+
+  float Sensitivity;
+};
+
+typedef uint32_t EkTexture;
+typedef uint32_t EkBuffer;
+
+class TextureStorage
+{
+public:
+  Texture* GetTexture(EkTexture Texture);
+private:
+  std::map<EkTexture, Texture> TextureMap;
+};
+
+class BufferStorage
+{
+public:
+  Buffer* GetBuffer(EkBuffer Buffer);
+private:
+  std::map<EkBuffer, Buffer> BufferMap;
 };
 
 class Renderer
 {
+  friend Camera;
 public:
   CommandDispatch GraphicsDispatch;
   CommandDispatch ComputeDispatch;
 
   VkDevice Device;
 
-  Renderer()
+  Renderer() : PrimCamera(this)
   {
 
   }
+
   ~Renderer()
   {
 
@@ -113,24 +157,27 @@ public:
   bool RequestDevExt(const char* ExtName);
 
   void Init(uint32_t inWidth, uint32_t inHeight);
+
+  // brief: Don't call this before CreateRenderPass()
+  Camera* GetCamera();
   bool CreateDevice();
 
   void CreateCmdBuffers();
   void CreateSwapchain(VkPresentModeKHR PresentMode);
   void CreateRenderPass();
   void CreateFrameBuffers();
+  Material CreateMat();
+  Shader CreateShader(const char* ShaderPath, const char* EntryPoint);
+  Pipeline CreatePipeline(Material Mat);
 
-
-
-
-  void CreateImage(Texture* Image, VkFormat Format, VkImageUsageFlags Usage);
+  void CreateImage(Texture* Image, VkFormat Format, VkImageUsageFlags Usage, eMemoryType Memory = eTextureMemory);
   void CreateImageView(VkImageView* ImageView, VkImage* Image, VkFormat Format, VkImageViewType ViewType, VkImageAspectFlags AspectMask);
 
-  void CreateDescriptorSet(VkDescriptorSetLayout* Layouts, uint32_t LayoutCount);
-  void DestroyDescriptorSet(VkDescriptorSet* DescriptorSet);
 private:
   void GetMemoryIndices();
+  void MakeSceneDescriptorPool();
 
+  Camera PrimCamera;
   uint32_t Width;
   uint32_t Height;
 
@@ -154,6 +201,8 @@ private:
     MemoryBlock MeshMemory;
     MemoryBlock HostMemory;
 
+  VkDescriptorPool ScenePool;
+
   VkSurfaceFormatKHR SurfaceFormat;
   VkSurfaceKHR Surface;
   VkSwapchainKHR Swapchain;
@@ -176,7 +225,5 @@ private:
   VkSemaphore Semaphore;
 
   GLFWwindow* Window;
-
-  std::vector<Texture> Textures;
 };
 

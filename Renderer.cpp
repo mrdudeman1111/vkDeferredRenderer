@@ -1,12 +1,24 @@
 #include <Renderer.h>
+
+#include <cstdint>
+#include <fstream>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/gtx/transform.hpp>
+#include <ios>
+#include <iostream>
 #include <algorithm>
-#include <cstddef>
 #include <cstring>
 #include <stdexcept>
 #include <string>
 #include <system_error>
-#include <vulkan/vulkan_core.h>
+
+#include <variant>
 #include <vulkan/vk_enum_string_helper.h>
+#include <vulkan/vulkan_core.h>
+
+#include <glm/mat4x4.hpp>
+#include <glm/gtx/projection.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 // VkImage
 // VkFormat
@@ -18,8 +30,148 @@
   Transfer Queues!!!!!!!!!!!
 */
 
+// I've chosen a stack allocator for memory management
+
+std::vector<char> ReadFile(const std::string& FileName)
+{
+  std::ifstream File(FileName, std::ios::ate | std::ios::binary);
+
+  if(!File.is_open())
+  {
+    throw std::runtime_error("Failed to open file");
+  }
+
+  size_t FileSize = File.tellg();
+  std::vector<char> Buffer(FileSize);
+
+  File.seekg(0);
+  File.read(Buffer.data(), static_cast<std::streamsize>(FileSize));
+
+  File.close();
+
+  return Buffer;
+}
+
+void Camera::PollInputs()
+{
+  CamDat.World = glm::mat4(1.f);
+  CamDat.Proj = glm::perspective(glm::radians(45.f), (float)(pRenderer->Width/pRenderer->Height), 0.1f, 1000.f);
+
+  {
+    double X, Y;
+    glfwGetCursorPos(pRenderer->Window, &X, &Y);
+
+    double DeltaX, DeltaY;
+
+    DeltaX = LastMousePos[0] - X;
+    DeltaY = LastMousePos[1] - Y;
+
+    LastMousePos[0] = X;
+    LastMousePos[1] = Y;
+
+    Rotation.x += (DeltaX * Sensitivity);
+    Rotation.y += (DeltaY * Sensitivity);
+
+    std::clamp(Rotation.y, -90.f, 90.f);
+
+    glm::vec3 Up = glm::vec3(0.f, 1.f, 0.f);
+    CameraMat = glm::rotate(CameraMat, Rotation.x, Up);
+
+    glm::vec3 Right = glm::vec3(CameraMat[0][0], CameraMat[1][0], CameraMat[2][0]);
+    CameraMat = glm::rotate(CameraMat, Rotation.y, Right);
+
+    glm::vec3 Forward = glm::vec3(CameraMat[0][2], CameraMat[1][2], CameraMat[2][2]);
+    Forward *= -1.f; // forward direction is always z*-1
+    CameraMat = glm::rotate(CameraMat, Rotation.z, Forward);
+
+    CameraMat = glm::translate(CameraMat, Position);
+  }
+
+  CamDat.View = glm::inverse(CameraMat);
+}
+
+void Camera::Update()
+{
+  VkResult Res;
+
+  if(CameraBuffer.Buffer == VK_NULL_HANDLE)
+  {
+    VkBufferCreateInfo BufferCI{};
+    BufferCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    BufferCI.size = (sizeof(glm::mat4) * 3);
+    BufferCI.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    BufferCI.sharingMode = VK_SHARING_MODE_CONCURRENT;
+
+    if((Res = vkCreateBuffer(pRenderer->Device, &BufferCI, nullptr, &CameraBuffer.Buffer)) != VK_SUCCESS)
+    {
+      throw std::runtime_error("Failed to create camera uniform buffer with error " + std::to_string(Res));
+    }
+
+    VkMemoryRequirements Req;
+    vkGetBufferMemoryRequirements(pRenderer->Device, CameraBuffer.Buffer, &Req);
+
+    uint32_t Alignment = 0;
+
+    for(uint32_t i = 0; Alignment < pRenderer->HostMemory.Used; i++)
+    {
+      Alignment = Req.alignment * i;
+    }
+
+    CameraBuffer.Allocation.AllocSize = sizeof(glm::mat4) * 3;
+    CameraBuffer.Allocation.Offset = Alignment;
+
+    if((Res = vkBindBufferMemory(pRenderer->Device, CameraBuffer.Buffer, pRenderer->HostMemory.Memory, Alignment)) != VK_SUCCESS)
+    {
+      throw std::runtime_error("Failed to bind buffer to memory at " + std::to_string(Alignment) + ", might be out of memory, error: " + std::to_string(Res));
+    }
+
+    vkMapMemory(pRenderer->Device, pRenderer->HostMemory.Memory, CameraBuffer.Allocation.Offset, CameraBuffer.Allocation.AllocSize, 0, &BufferMemory);
+  }
+
+  PollInputs();
+
+  memcpy(BufferMemory, &CamDat, sizeof(CamDat));
+
+  VkDescriptorBufferInfo BuffInfo{};
+  BuffInfo.range = sizeof(glm::vec3) * 3;
+  BuffInfo.buffer = CameraBuffer.Buffer;
+  // this is an offset relative to the start of the Buffer, not the VkDeviceMemory that we've put the buffer in.
+  BuffInfo.offset = 0;
+
+  VkWriteDescriptorSet Write{};
+  Write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  Write.descriptorCount = 1;
+  Write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  Write.dstSet = CamDescriptor;
+  Write.dstBinding = 0;
+  Write.dstArrayElement = 0;
+  Write.pBufferInfo = &BuffInfo;
+
+  vkUpdateDescriptorSets(pRenderer->Device, 1, &Write, 0, nullptr);
+}
+
 /*        Helpers         */
-void Renderer::CreateImage(Texture* Image, VkFormat Format, VkImageUsageFlags Usage)
+Buffer* BufferStorage::GetBuffer(EkBuffer Buffer)
+{
+  if(BufferMap.count(Buffer))
+  {
+    return &BufferMap[Buffer];
+  }
+
+  return nullptr;
+}
+
+Texture* TextureStorage::GetTexture(EkTexture Texture)
+{
+  if(TextureMap.count(Texture))
+  {
+    return &TextureMap[Texture];
+  }
+
+  return nullptr;
+}
+
+void Renderer::CreateImage(Texture* Image, VkFormat Format, VkImageUsageFlags Usage, eMemoryType Memory)
 {
   VkResult Res;
 
@@ -44,11 +196,35 @@ void Renderer::CreateImage(Texture* Image, VkFormat Format, VkImageUsageFlags Us
   VkMemoryRequirements MemReq;
   vkGetImageMemoryRequirements(Device, Image->Image, &MemReq);
 
+  MemoryBlock* MemoryTarget;
+
+  switch(Memory)
+  {
+    case eTextureMemory:
+      MemoryTarget = &TextureMemory;
+      break;
+    case eTransferMemory:
+      MemoryTarget = &TransferMemory;
+      break;
+    case eHostMemory:
+      MemoryTarget = &HostMemory;
+      break;
+    case eMeshMemory:
+      MemoryTarget = &MeshMemory;
+      break;
+    case eBufferMemory:
+      MemoryTarget = &BufferMemory;
+      break;
+    default:
+      MemoryTarget = &TextureMemory;
+      break;
+  }
+
   uint32_t Alignment = 0;
 
   for(uint32_t i = 0; Alignment == 0; i++)
   {
-    if((MemReq.alignment*i) >= TextureMemory.Used)
+    if((MemReq.alignment*i) >= MemoryTarget->Used)
     {
       Alignment = MemReq.alignment*i;
     }
@@ -56,8 +232,8 @@ void Renderer::CreateImage(Texture* Image, VkFormat Format, VkImageUsageFlags Us
 
   vkBindImageMemory(Device, Image->Image, TextureMemory.Memory, VkDeviceSize(Alignment));
 
-  Image->Offset = Alignment;
-  Image->MemorySize = MemReq.size;
+  Image->Allocation.Offset = Alignment;
+  Image->Allocation.AllocSize = MemReq.size;
 
   TextureMemory.Available -= VkDeviceSize(Alignment);
   TextureMemory.Used += VkDeviceSize(Alignment);
@@ -86,10 +262,6 @@ void Renderer::CreateImageView(VkImageView* ImageView, VkImage* Image, VkFormat 
   {
     throw std::runtime_error("Failed to create image view with error: " + std::to_string(Res));
   }
-}
-
-void Renderer::CreateDescriptorSet(VkDescriptorSetLayout* Layouts, uint32_t LayoutCount)
-{
 }
 
 void Renderer::GetMemoryIndices()
@@ -379,6 +551,11 @@ void Renderer::Init(uint32_t inWidth, uint32_t inHeight)
   glfwCreateWindowSurface(Instance, Window, nullptr, &Surface);
 }
 
+Camera* Renderer::GetCamera()
+{
+  return &PrimCamera;
+}
+
 bool Renderer::CreateDevice()
 {
   VkResult Res;
@@ -567,6 +744,56 @@ void Renderer::CreateSwapchain(VkPresentModeKHR PresentMode)
   vkGetSwapchainImagesKHR(Device, Swapchain, &ImageCount, SwapchainImages.data());
 }
 
+void Renderer::MakeSceneDescriptorPool()
+{
+  VkResult Res;
+
+  // Camera
+  VkDescriptorPoolSize Size;
+  Size.descriptorCount = 1;
+  Size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+  VkDescriptorPoolCreateInfo PoolCI{};
+  PoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+  PoolCI.poolSizeCount = 1;
+  PoolCI.pPoolSizes = &Size;
+  PoolCI.maxSets = 3;
+
+  if((Res = vkCreateDescriptorPool(Device, &PoolCI, nullptr, &ScenePool)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("Failed to create descriptor pool with error " + std::to_string(Res));
+  }
+
+  VkDescriptorSetLayoutBinding Binding{};
+  Binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  Binding.descriptorCount = 1;
+  Binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  Binding.binding = 0;
+
+  VkDescriptorSetLayoutCreateInfo LayoutCI{};
+  LayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  LayoutCI.bindingCount = 1;
+  LayoutCI.pBindings = &Binding;
+
+  VkDescriptorSetLayout Layout;
+
+  if((Res = vkCreateDescriptorSetLayout(Device, &LayoutCI, nullptr, &Layout)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("Failed to create descriptor set layout with error: " + std::to_string(Res));
+  }
+
+  VkDescriptorSetAllocateInfo AllocInf{};
+  AllocInf.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  AllocInf.descriptorPool = ScenePool;
+  AllocInf.descriptorSetCount = 1;
+  AllocInf.pSetLayouts = &Layout;
+
+  if((Res = vkAllocateDescriptorSets(Device, &AllocInf, &PrimCamera.CamDescriptor)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("Failed to allocate descriptor with error: " + std::to_string(Res));
+  }
+}
+
 void Renderer::CreateRenderPass()
 {
   /*
@@ -576,7 +803,7 @@ void Renderer::CreateRenderPass()
     the color buffer's format is already known, we define it in the VkSwapchainCreateInfoKHR structure when we created our swapchain.
     but the normal and depth we have to figure out.
     the depth buffer only does one thing, it tells us how far away a surface is from the screen, Because of this, we can just use one channel, we will use a depth format.
-    and the normal buffer tells use where a face is pointing, because we are making a *3D* Renderer, we need to store 3 values, so we will use an RGB format.
+    and the normal buffer tells use where a face is pointing, because we are making a *3D* Renderer, we need to store 3 values (XYZ), so we will use an RGB format.
   */
 
   VkResult Res;
@@ -669,6 +896,8 @@ void Renderer::CreateRenderPass()
   {
     throw std::runtime_error("failed to create renderpass with error: " + std::to_string(Res));
   }
+
+  MakeSceneDescriptorPool();
 }
 
 void Renderer::CreateFrameBuffers()
@@ -711,5 +940,47 @@ void Renderer::CreateFrameBuffers()
       throw std::runtime_error("Failed to create framebuffer with error: " + std::to_string(Res));
     }
   }
+}
+
+Material Renderer::CreateMat()
+{
+  Material Ret;
+  Ret.pDevice = &Device;
+
+  return Ret;
+}
+
+Shader Renderer::CreateShader(const char* ShaderPath, const char* EntryPoint)
+{
+  VkResult Res;
+
+  Shader Ret;
+  Ret.EntryPoint = EntryPoint;
+
+  std::vector<char> ShaderCode = ReadFile(ShaderPath);
+
+  VkShaderModuleCreateInfo ShaderCI{};
+  ShaderCI.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  ShaderCI.pCode = reinterpret_cast<const uint32_t*>(ShaderCode.data());
+  ShaderCI.codeSize = ShaderCode.size();
+
+  if((Res = vkCreateShaderModule(Device, &ShaderCI, nullptr, &Ret.sModule)) != VK_SUCCESS)
+  {
+    throw std::runtime_error("Failed to create the shader module with error: " + std::to_string(Res));
+  }
+
+  return Ret;
+}
+
+Pipeline Renderer::CreatePipeline(Material Mat)
+{
+  Pipeline Ret(&Device);
+
+  Ret.Mat = Mat;
+
+  Ret.BakeRecipe(Width, Height, &Renderpass, ePassType::ePrimary);
+  Ret.Init();
+
+  return Ret;
 }
 

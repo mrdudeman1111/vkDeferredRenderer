@@ -1155,7 +1155,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/lib/libvulkan.so][/usr/include][c missing components: glslc glslangValidator][v1.3.257()]"
+			"value" : "[/lib/libvulkan.so][/usr/include][cfound components: glslc glslangValidator ][v1.3.257()]"
 		},
 		{
 			"name" : "Trolling BB_BINARY_DIR",
@@ -1207,7 +1207,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "Vulkan_GLSLANG_VALIDATOR_EXECUTABLE-NOTFOUND"
+			"value" : "/bin/glslangValidator"
 		},
 		{
 			"name" : "Vulkan_GLSLC_EXECUTABLE",
@@ -1223,7 +1223,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "Vulkan_GLSLC_EXECUTABLE-NOTFOUND"
+			"value" : "/bin/glslc"
 		},
 		{
 			"name" : "Vulkan_INCLUDE_DIR",

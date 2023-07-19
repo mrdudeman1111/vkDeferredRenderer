@@ -1,11 +1,18 @@
+#pragma once
+
 #include <cstddef>
 #include <iostream>
+#include <vector>
 
-#include <Renderer.h>
+#define GLFW_FORCE_RADIANS
+#include <glm/glm.hpp>
+
+#include <vulkan/vulkan.h>
+
 #include <map>
-#include <vulkan/vulkan_core.h>
 
 class Material;
+class Renderer;
 
 enum ePassType
 {
@@ -57,7 +64,6 @@ class PipelineRecipe
 {
 public:
   std::vector<VkPipelineShaderStageCreateInfo> StageInfos;
-  std::vector<VkDescriptorSetLayout> DescriptorLayouts;
 
   VkPipelineViewportStateCreateInfo ViewportInfo;
   VkPipelineMultisampleStateCreateInfo MultiSample;
@@ -80,38 +86,37 @@ public:
 
 class Material
 {
+  friend Renderer;
 public:
-  Material()
-  {
-    LayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    LayoutCI.bindingCount = 0;
-  }
-
-  VkDescriptorSetLayout Layout;
+  Material(){}
+  Material(VkDevice* pDev) : pDevice(pDev) {}
 
   Shader* VertShader, *FragShader, *GeomShader;
 
-  void AddTexture(Texture* pTex, VkDescriptorSetLayoutBinding Binding, VkDescriptorType Type);
-  void AddBuffer(Buffer* pBuffer, VkDescriptorSetLayoutBinding Binding, VkDescriptorType Type);
+  void AddResource(VkDescriptorSetLayoutBinding Binding, VkDescriptorType Type);
 
   VkDescriptorPoolSize* GetSizes(uint32_t MaxSets, uint32_t* pSizeCount);
+  VkDescriptorSetLayout GetLayout();
 
 private:
-  VkDescriptorSetLayoutCreateInfo LayoutCI;
-  std::vector<VkDescriptorSetLayoutBinding> Bindings;
+  VkDevice* pDevice;
 
-  std::vector<Texture*> pTextures;
-  std::vector<Buffer*> pBuffers;
+  std::vector<VkDescriptorSetLayoutBinding> Bindings;
 
   std::vector<VkDescriptorPoolSize> Sizes;
 };
 
+class Renderer;
+
 class Pipeline
 {
+  friend Renderer;
 public:
+  Pipeline(VkDevice* pDev);
+
   PipelineRecipe Recipe;
   VkPipelineLayout PipeLayout;
-  VkPipeline Pipeline;
+  VkPipeline Pipe;
 
   void Init();
   void BakeRecipe(uint32_t Width, uint32_t Height, VkRenderPass* pRP, ePassType Type);
@@ -140,11 +145,6 @@ private:
   VkDescriptorPool* pPool;
 };
 
-class Mesh
-{
-public:
-  VkBuffer VertexBuffer;
-  VkBuffer IndexBuffer;
-private:
-};
+class MaterialInstance
+{};
 
