@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "game::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-game-Debug-03a709873dc9f64bfb4f.json",
+					"jsonFile" : "target-game-Debug-1317e349269d565ed7b5.json",
 					"name" : "game",
 					"projectIndex" : 0
 				}
@@ -55,6 +55,6 @@
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 5
+		"minor" : 6
 	}
 }

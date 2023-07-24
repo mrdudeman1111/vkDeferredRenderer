@@ -2,23 +2,30 @@
 
 #include <Pipeline.h>
 
-#include <assimp/BaseImporter.h>
-#include <assimp/mesh.h>
+#include <assimp/Importer.hpp>
 #include <assimp/scene.h>
-#include <assimp/ParsingUtils.h>
+
 #include <vulkan/vulkan_core.h>
+
+class MeshComponent;
+class Renderer;
 
 struct Header
 {
 public:
-  uint32_t AllocSize;
-  uint32_t Offset;
+  uint32_t AllocSize = -1;
+  uint32_t Offset = -1;
+
+  VkDeviceMemory* Memory;
+  uint8_t MemoryFlags;
 };
 
 struct Texture
 {
 public:
   VkImage Image;
+  VkFormat Format;
+  VkImageLayout Layout;
 
   Header Allocation;
 };
@@ -43,7 +50,9 @@ struct VertexWeight
 class Bone
 {
   public:
-    void ParseNode(aiNode* pNode);
+    void AsignNode(aiNode* pNode);
+    Bone* FindBone(const char* pName);
+    void PackBuffer(glm::mat4* BufferMemory);
 
     glm::mat4 GetTransform();
 
@@ -51,50 +60,65 @@ class Bone
 
     std::string Name;
 
-    Bone* Parent;
+    Bone* Parent = nullptr;
 
     glm::mat4 Transform;
+
+    uint32_t BoneIdx;
 };
 
 class Skeleton
 {
   public:
     Bone RootBone;
+    Bone* FindBone(const char* pName);
+    void PackBuffer(glm::mat4* BufferMemory);
 };
 
 class Mesh
 {
+    friend MeshComponent;
   public:
-    void UpdateSkeleton();
+    void Update(Renderer* pRenderer);
+    void Draw(VkCommandBuffer* Buffer, VkDescriptorSet CameraDescriptor);
 
     glm::mat4 Transform;
 
     VkDescriptorSet MaterialSet;
-    VkDescriptorSet SkeletonSet;
 
     Skeleton Armature;
 
     std::vector<Vertex> Vertices;
     std::vector<uint32_t> Indices;
+
+    Pipeline* pPipeline;
   private:
+    void UpdateSkeleton(Renderer* pRenderer);
+    void ZeroDescriptor(glm::mat4* Buffer);
 
     Buffer vBuff;
     Buffer iBuff;
+    Buffer sBuff;
 };
 
 class MeshComponent
 {
   public:
-    void LoadMesh(const char* ModelPath);
+    void LoadMesh(Renderer* pRender, Pipeline* pPipeline, const char* ModelPath);
+    void Update();
+    void UpdateSkeletons();
+    void Draw(VkCommandBuffer* Buffer);
+
+    Pipeline* pPipeline;
 
   private:
     void ParseNode(const aiScene* pScene, aiNode* pNode);
     void ParseMesh(const aiScene* pScene, aiMesh* pMesh);
     void ParseBone(Bone* pBone, aiNode* pNode);
 
-    std::vector<Mesh> Meshes;
+    Renderer* pRenderer;
 
-    Pipeline* pPipeline;
+    std::vector<Mesh> Meshes;
 };
 
 

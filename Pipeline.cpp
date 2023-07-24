@@ -6,10 +6,10 @@
 #include <Pipeline.h>
 #include <vulkan/vulkan_core.h>
 
-Pipeline::Pipeline(VkDevice* pDev) : pDevice(pDev)
+Pipeline::Pipeline(VkDevice* pDev, VkRenderPass* pRP) : pDevice(pDev), pRenderPass(pRP)
 {}
 
-void Pipeline::Init()
+void Pipeline::Init(VkDescriptorSetLayout CameraLayout)
 {
   VkResult Res;
 
@@ -17,9 +17,10 @@ void Pipeline::Init()
   LayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 
   VkDescriptorSetLayout DescLay = Mat.GetLayout();
+  VkDescriptorSetLayout Layouts[2] = { CameraLayout, DescLay };
 
-  LayoutInfo.setLayoutCount = 1;
-  LayoutInfo.pSetLayouts = &DescLay;
+  LayoutInfo.setLayoutCount = 2;
+  LayoutInfo.pSetLayouts = Layouts;
 
   if((Res = vkCreatePipelineLayout(*pDevice, &LayoutInfo, nullptr, &PipeLayout)) != VK_SUCCESS)
   {
@@ -46,7 +47,7 @@ void Pipeline::Init()
   Raster.rasterizerDiscardEnable = VK_FALSE;
   Raster.polygonMode = VK_POLYGON_MODE_FILL;
   Raster.lineWidth = 1.f;
-  Raster.cullMode = VK_CULL_MODE_BACK_BIT;
+  Raster.cullMode = VK_CULL_MODE_NONE;
   Raster.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   Raster.depthBiasEnable = VK_FALSE;
 
@@ -60,17 +61,18 @@ void Pipeline::Init()
   PipeInfo.pViewportState = &Recipe.ViewportInfo;
   PipeInfo.pColorBlendState = &Recipe.ColorBlend;
   PipeInfo.pMultisampleState = &Recipe.MultiSample;
-  if(Recipe.pDepthStencilInfo)
+
+  if(Recipe.pDepthStencilInfo.sType == VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO) // if the stype is filled, we have added this structure to the recipe
   {
-    PipeInfo.pDepthStencilState = Recipe.pDepthStencilInfo;
+    PipeInfo.pDepthStencilState = &Recipe.pDepthStencilInfo;
   }
 
   PipeInfo.pInputAssemblyState = &InputAssembly;
   PipeInfo.pVertexInputState = &vInputState;
 
-  if(Recipe.TesselationState)
+  if(Recipe.TesselationState.sType == VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO) // if the stype is filled, we have added this structure to the recipe
   {
-    PipeInfo.pTessellationState = Recipe.TesselationState;
+    PipeInfo.pTessellationState = &Recipe.TesselationState;
   }
   PipeInfo.pRasterizationState = &Raster;
 
@@ -80,17 +82,15 @@ void Pipeline::Init()
   }
 }
 
-void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, VkRenderPass* pRP, ePassType Type)
+void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, ePassType Type)
 {
   VkResult Res;
-
-  pRenderPass = pRP;
 
   VkDescriptorPoolCreateInfo PoolCI{};
   PoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 
   uint32_t SizeCount = 0;
-  PoolCI.pPoolSizes = Mat.GetSizes(2048, &SizeCount);
+  PoolCI.pPoolSizes = Mat.GetSizes(&SizeCount);
   PoolCI.poolSizeCount = SizeCount;
 
   PoolCI.maxSets = 2048;
@@ -100,7 +100,7 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, VkRenderPass* pRP
     throw std::runtime_error("Failed to create descriptor pool with error: " + std::to_string(Res));
   }
 
-  Recipe.StageInfos = {{},{},{}};
+  Recipe.StageInfos = {{},{}};
   Recipe.StageInfos[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   Recipe.StageInfos[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
   Recipe.StageInfos[0].pName = Mat.VertShader->EntryPoint;
@@ -113,6 +113,7 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, VkRenderPass* pRP
 
   if(Mat.GeomShader)
   {
+    Recipe.StageInfos.push_back({});
     Recipe.StageInfos[2].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     Recipe.StageInfos[2].stage = VK_SHADER_STAGE_GEOMETRY_BIT;
     Recipe.StageInfos[2].pName = Mat.GeomShader->EntryPoint;
@@ -125,65 +126,127 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, VkRenderPass* pRP
   Recipe.inBindings = V.GetBindingDescription();
   Recipe.inAttribs = V.GetAttributeDescription();
 
-  Recipe.pDepthStencilInfo = new VkPipelineDepthStencilStateCreateInfo();
-  Recipe.pDepthStencilInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-  Recipe.pDepthStencilInfo->depthTestEnable = VK_TRUE;
-  Recipe.pDepthStencilInfo->depthWriteEnable = VK_TRUE;
-  Recipe.pDepthStencilInfo->depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-  Recipe.pDepthStencilInfo->depthBoundsTestEnable = VK_FALSE;
-  Recipe.pDepthStencilInfo->minDepthBounds = 0.0f;
-  Recipe.pDepthStencilInfo->maxDepthBounds = 1.0f;
-  Recipe.pDepthStencilInfo->stencilTestEnable = VK_FALSE;
+  Recipe.pDepthStencilInfo = {}; // fill with defaults
+  Recipe.pDepthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+  Recipe.pDepthStencilInfo.depthTestEnable = VK_TRUE;
+  Recipe.pDepthStencilInfo.depthWriteEnable = VK_TRUE;
+  Recipe.pDepthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+  Recipe.pDepthStencilInfo.depthBoundsTestEnable = VK_FALSE;
+  Recipe.pDepthStencilInfo.minDepthBounds = 0.0f;
+  Recipe.pDepthStencilInfo.maxDepthBounds = 1.0f;
+  Recipe.pDepthStencilInfo.stencilTestEnable = VK_FALSE;
 
   Recipe.MultiSample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   Recipe.MultiSample.sampleShadingEnable = VK_FALSE;
   Recipe.MultiSample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-  VkPipelineColorBlendAttachmentState ColorAttachment;
-  ColorAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-  ColorAttachment.blendEnable = VK_FALSE;
+  VkPipelineColorBlendAttachmentState* ColorAttachment = new VkPipelineColorBlendAttachmentState{};
+
+  for(uint32_t i = 0; i < 1; i++)
+  {
+    ColorAttachment[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    ColorAttachment[i].blendEnable = VK_FALSE;
+  }
+
+/*
+  ColorAttachment[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+  ColorAttachment[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+  ColorAttachment[0].colorBlendOp = VK_BLEND_OP_ADD;
+  ColorAttachment[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+  ColorAttachment[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+  ColorAttachment[0].alphaBlendOp = VK_BLEND_OP_ADD;
+*/
+
+  // only the color buffer [0] has any weight to our presented image, the rest are just lighting info
 
   Recipe.ColorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   Recipe.ColorBlend.logicOp = VK_LOGIC_OP_COPY;
   Recipe.ColorBlend.logicOpEnable = VK_FALSE;
   Recipe.ColorBlend.logicOp = VK_LOGIC_OP_COPY;
   Recipe.ColorBlend.attachmentCount = 1;
-  Recipe.ColorBlend.pAttachments = &ColorAttachment;
+  Recipe.ColorBlend.pAttachments = ColorAttachment;
   Recipe.ColorBlend.blendConstants[0] = 0.0f;
   Recipe.ColorBlend.blendConstants[1] = 0.0f;
   Recipe.ColorBlend.blendConstants[2] = 0.0f;
   Recipe.ColorBlend.blendConstants[3] = 0.0f;
 
-  VkRect2D Scissor;
-  Scissor.extent.width = inWidth;
-  Scissor.extent.height = inWidth;
-  Scissor.offset.x = 0;
-  Scissor.offset.y = 0;
+  VkRect2D* Scissor = new VkRect2D;
+  Scissor->extent.width = inWidth;
+  Scissor->extent.height = inHeight;
+  Scissor->offset.x = 0;
+  Scissor->offset.y = 0;
+
+  Recipe.Viewport.width = inWidth;
+  Recipe.Viewport.height = inHeight;
+  Recipe.Viewport.minDepth = 0.f;
+  Recipe.Viewport.maxDepth = 1.f;
+  Recipe.Viewport.x = 0;
+  Recipe.Viewport.y = 0;
 
   Recipe.ViewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
   Recipe.ViewportInfo.scissorCount = 1;
-  Recipe.ViewportInfo.pScissors = &Scissor;
+  Recipe.ViewportInfo.pScissors = Scissor;
   Recipe.ViewportInfo.viewportCount = 1;
   Recipe.ViewportInfo.pViewports = &Recipe.Viewport;
 
   PassType = Type;
 }
 
-void Material::AddResource(VkDescriptorSetLayoutBinding Binding, VkDescriptorType Type)
+VkDescriptorSet Pipeline::CreateDescriptor()
+{
+  VkResult Res;
+
+  VkDescriptorSet Set;
+
+  VkDescriptorSetLayout Lay = Mat.GetLayout();
+
+  VkDescriptorSetAllocateInfo AllocInfo{};
+  AllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  AllocInfo.descriptorPool = Pool;
+  AllocInfo.descriptorSetCount = 1;
+  AllocInfo.pSetLayouts = &Lay;
+
+  if((Res = vkAllocateDescriptorSets(*pDevice, &AllocInfo, &Set)) != VK_SUCCESS)
+  {
+    switch(Res)
+    {
+      case VK_ERROR_OUT_OF_DEVICE_MEMORY:
+        std::cout << "ran out of pool memory when allocating a descriptor set from a pipeline, ran out of DEVICE_MEMORY\n";
+        break;
+      case VK_ERROR_OUT_OF_POOL_MEMORY:
+        std::cout << "ran out of pool memory when allocating a descriptor set from a pipeline, ran out of POOL_MEMORY\n";
+        break;
+      case VK_ERROR_OUT_OF_HOST_MEMORY:
+        std::cout << "ran out of pool memory when allocating a descriptor set from a pipeline, ran out of HOST_MEMORY\n";
+        break;
+      default:
+        throw std::runtime_error("Failed to allocate descriptor set with error: " + std::to_string(Res));
+    }
+  }
+
+  return Set;
+}
+
+void Material::AddResource(VkDescriptorSetLayoutBinding Binding)
 {
   VkDescriptorPoolSize Size;
-  Size.type = Type;
+  Size.type = Binding.descriptorType;
   Size.descriptorCount = 1;
 
   Bindings.push_back(Binding);
 }
 
-VkDescriptorPoolSize* Material::GetSizes(uint32_t MaxSets, uint32_t* pSizeCount)
+VkDescriptorPoolSize* Material::GetSizes(uint32_t* pSizeCount)
 {
-  for(VkDescriptorPoolSize& Size : Sizes)
+  for(VkDescriptorSetLayoutBinding& Binding : Bindings)
   {
-    Size.descriptorCount *= MaxSets;
-    pSizeCount += Size.descriptorCount;
+    VkDescriptorPoolSize Size;
+    Size.descriptorCount = Binding.descriptorCount;
+    Size.type = Binding.descriptorType;
+
+    Sizes.push_back(Size);
+
+    *pSizeCount += Size.descriptorCount;
   }
 
   return Sizes.data();

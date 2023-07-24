@@ -1,23 +1,29 @@
 CMakeFiles/game.dir/main.cpp.o: \
  /run/media/ethanw/LinuxGames/Repos/Trolling/main.cpp \
- /usr/include/stdc-predef.h /usr/include/GLFW/glfw3.h \
- /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stddef.h \
- /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stdint.h \
- /usr/include/stdint.h /usr/include/bits/libc-header-start.h \
+ /usr/include/stdc-predef.h \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.h \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.h \
+ /usr/include/c++/13.1.1/cstddef \
+ /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/c++config.h \
+ /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/bits/wordsize.h /usr/include/bits/timesize.h \
  /usr/include/sys/cdefs.h /usr/include/bits/long-double.h \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/cpu_defines.h \
+ /usr/include/c++/13.1.1/pstl/pstl_config.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stddef.h \
+ /usr/include/glm/fwd.hpp /usr/include/glm/detail/qualifier.hpp \
+ /usr/include/glm/detail/setup.hpp /usr/include/c++/13.1.1/cassert \
+ /usr/include/assert.h /usr/include/glm/simd/platform.h \
+ /usr/include/c++/13.1.1/cstdint \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/include/stdint.h \
+ /usr/include/stdint.h /usr/include/bits/libc-header-start.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/bits/time64.h /usr/include/bits/wchar.h \
  /usr/include/bits/stdint-intn.h /usr/include/bits/stdint-uintn.h \
- /usr/include/GL/gl.h /usr/include/GL/glext.h \
- /usr/include/KHR/khrplatform.h /usr/include/c++/13.1.1/iostream \
+ /usr/include/c++/13.1.1/type_traits /usr/include/c++/13.1.1/iostream \
  /usr/include/c++/13.1.1/bits/requires_hosted.h \
- /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/c++config.h \
- /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/os_defines.h \
- /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/cpu_defines.h \
- /usr/include/c++/13.1.1/pstl/pstl_config.h \
  /usr/include/c++/13.1.1/ostream /usr/include/c++/13.1.1/ios \
  /usr/include/c++/13.1.1/iosfwd /usr/include/c++/13.1.1/bits/stringfwd.h \
  /usr/include/c++/13.1.1/bits/memoryfwd.h \
@@ -35,7 +41,7 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/c++/13.1.1/bits/cxxabi_init_exception.h \
  /usr/include/c++/13.1.1/typeinfo \
  /usr/include/c++/13.1.1/bits/hash_bytes.h /usr/include/c++/13.1.1/new \
- /usr/include/c++/13.1.1/bits/move.h /usr/include/c++/13.1.1/type_traits \
+ /usr/include/c++/13.1.1/bits/move.h \
  /usr/include/c++/13.1.1/bits/nested_exception.h \
  /usr/include/c++/13.1.1/bits/char_traits.h \
  /usr/include/c++/13.1.1/bits/localefwd.h \
@@ -119,7 +125,6 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/c++/13.1.1/bits/charconv.h \
  /usr/include/c++/13.1.1/bits/basic_string.tcc \
  /usr/include/c++/13.1.1/bits/memory_resource.h \
- /usr/include/c++/13.1.1/cstddef \
  /usr/include/c++/13.1.1/bits/uses_allocator.h \
  /usr/include/c++/13.1.1/bits/uses_allocator_args.h \
  /usr/include/c++/13.1.1/tuple \
@@ -138,29 +143,16 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/c++/13.1.1/bits/locale_facets.tcc \
  /usr/include/c++/13.1.1/bits/basic_ios.tcc \
  /usr/include/c++/13.1.1/bits/ostream.tcc /usr/include/c++/13.1.1/istream \
- /usr/include/c++/13.1.1/bits/istream.tcc \
- /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.h \
- /usr/include/glm/fwd.hpp /usr/include/glm/detail/qualifier.hpp \
- /usr/include/glm/detail/setup.hpp /usr/include/c++/13.1.1/cassert \
- /usr/include/assert.h /usr/include/glm/simd/platform.h \
- /usr/include/c++/13.1.1/cstdint /usr/include/c++/13.1.1/vector \
+ /usr/include/c++/13.1.1/bits/istream.tcc /usr/include/c++/13.1.1/vector \
  /usr/include/c++/13.1.1/bits/stl_uninitialized.h \
  /usr/include/c++/13.1.1/bits/stl_vector.h \
  /usr/include/c++/13.1.1/bits/stl_bvector.h \
- /usr/include/c++/13.1.1/bits/vector.tcc /usr/include/c++/13.1.1/thread \
- /usr/include/c++/13.1.1/bits/std_thread.h \
- /usr/include/c++/13.1.1/bits/unique_ptr.h \
- /usr/include/c++/13.1.1/bits/this_thread_sleep.h \
- /usr/include/c++/13.1.1/bits/chrono.h /usr/include/c++/13.1.1/ratio \
- /usr/include/c++/13.1.1/limits /usr/include/c++/13.1.1/ctime \
- /usr/include/c++/13.1.1/bits/parse_numbers.h \
+ /usr/include/c++/13.1.1/bits/vector.tcc \
  /usr/include/vulkan/vulkan_core.h /usr/include/vulkan/vk_platform.h \
  /usr/include/vk_video/vulkan_video_codec_h264std.h \
  /usr/include/vk_video/vulkan_video_codec_h264std_decode.h \
  /usr/include/vk_video/vulkan_video_codec_h265std.h \
  /usr/include/vk_video/vulkan_video_codec_h265std_decode.h \
- /run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.h \
- /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.h \
  /usr/include/glm/glm.hpp /usr/include/glm/detail/_fixes.hpp \
  /usr/include/c++/13.1.1/cmath /usr/include/math.h \
  /usr/include/bits/math-vector.h /usr/include/bits/libm-simd-decl-stubs.h \
@@ -169,7 +161,7 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/bits/mathcalls-helper-functions.h \
  /usr/include/bits/mathcalls.h /usr/include/bits/mathcalls-narrow.h \
  /usr/include/bits/iscanonical.h /usr/include/c++/13.1.1/bits/specfun.h \
- /usr/include/c++/13.1.1/tr1/gamma.tcc \
+ /usr/include/c++/13.1.1/limits /usr/include/c++/13.1.1/tr1/gamma.tcc \
  /usr/include/c++/13.1.1/tr1/special_function_util.h \
  /usr/include/c++/13.1.1/tr1/bessel_function.tcc \
  /usr/include/c++/13.1.1/tr1/beta_function.tcc \
@@ -304,9 +296,7 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/c++/13.1.1/bits/node_handle.h \
  /usr/include/c++/13.1.1/bits/stl_map.h \
  /usr/include/c++/13.1.1/bits/stl_multimap.h \
- /usr/include/c++/13.1.1/bits/erase_if.h \
- /usr/include/assimp/BaseImporter.h /usr/include/assimp/Exceptional.h \
- /usr/include/assimp/DefaultIOStream.h /usr/include/assimp/IOStream.hpp \
+ /usr/include/c++/13.1.1/bits/erase_if.h /usr/include/assimp/Importer.hpp \
  /usr/include/assimp/types.h /usr/include/string.h /usr/include/strings.h \
  /usr/include/assimp/defs.h /usr/include/assimp/config.h \
  /usr/include/assimp/vector2.h /usr/include/assimp/vector3.h \
@@ -323,39 +313,19 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/c++/13.1.1/pstl/glue_algorithm_defs.h \
  /usr/include/c++/13.1.1/pstl/execution_defs.h \
  /usr/include/assimp/matrix4x4.inl /usr/include/assimp/MathFunctions.h \
- /usr/include/assimp/quaternion.inl /usr/include/assimp/importerdesc.h \
- /usr/include/assimp/TinyFormatter.h /usr/include/c++/13.1.1/sstream \
- /usr/include/c++/13.1.1/bits/sstream.tcc \
- /usr/include/assimp/ProgressHandler.hpp /usr/include/c++/13.1.1/set \
- /usr/include/c++/13.1.1/bits/stl_set.h \
- /usr/include/c++/13.1.1/bits/stl_multiset.h \
- /usr/include/c++/13.1.1/memory \
- /usr/include/c++/13.1.1/bits/stl_raw_storage_iter.h \
- /usr/include/c++/13.1.1/bits/align.h \
- /usr/include/c++/13.1.1/bits/shared_ptr.h \
- /usr/include/c++/13.1.1/bits/shared_ptr_base.h \
- /usr/include/c++/13.1.1/bits/allocated_ptr.h \
- /usr/include/c++/13.1.1/ext/concurrence.h \
- /usr/include/c++/13.1.1/bits/shared_ptr_atomic.h \
- /usr/include/c++/13.1.1/bits/atomic_base.h \
- /usr/include/c++/13.1.1/bits/atomic_lockfree_defines.h \
- /usr/include/c++/13.1.1/backward/auto_ptr.h \
- /usr/include/c++/13.1.1/pstl/glue_memory_defs.h \
- /usr/include/assimp/mesh.h /usr/include/assimp/aabb.h \
- /usr/include/assimp/scene.h /usr/include/assimp/texture.h \
- /usr/include/assimp/Compiler/pushpack1.h \
- /usr/include/assimp/Compiler/poppack1.h /usr/include/assimp/light.h \
+ /usr/include/assimp/quaternion.inl /usr/include/assimp/scene.h \
+ /usr/include/assimp/texture.h /usr/include/assimp/Compiler/pushpack1.h \
+ /usr/include/assimp/Compiler/poppack1.h /usr/include/assimp/mesh.h \
+ /usr/include/assimp/aabb.h /usr/include/assimp/light.h \
  /usr/include/assimp/camera.h /usr/include/assimp/material.h \
  /usr/include/assimp/material.inl /usr/include/assimp/anim.h \
- /usr/include/assimp/metadata.h /usr/include/assimp/ParsingUtils.h \
- /usr/include/assimp/StringComparison.h /usr/include/assimp/ai_assert.h \
- /usr/include/assimp/StringUtils.h /usr/include/c++/13.1.1/cstdarg \
- /usr/include/c++/13.1.1/locale \
- /usr/include/c++/13.1.1/bits/locale_facets_nonio.h \
- /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/time_members.h \
- /usr/include/c++/13.1.1/x86_64-pc-linux-gnu/bits/messages_members.h \
- /usr/include/libintl.h /usr/include/c++/13.1.1/bits/codecvt.h \
- /usr/include/c++/13.1.1/bits/locale_facets_nonio.tcc \
- /usr/include/c++/13.1.1/bits/locale_conv.h \
- /usr/include/c++/13.1.1/iomanip \
- /usr/include/c++/13.1.1/bits/quoted_string.h
+ /usr/include/assimp/metadata.h /usr/include/GLFW/glfw3.h \
+ /usr/include/GL/gl.h /usr/include/GL/glext.h \
+ /usr/include/KHR/khrplatform.h \
+ /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.h \
+ /usr/include/c++/13.1.1/thread /usr/include/c++/13.1.1/bits/std_thread.h \
+ /usr/include/c++/13.1.1/bits/unique_ptr.h \
+ /usr/include/c++/13.1.1/bits/this_thread_sleep.h \
+ /usr/include/c++/13.1.1/bits/chrono.h /usr/include/c++/13.1.1/ratio \
+ /usr/include/c++/13.1.1/ctime \
+ /usr/include/c++/13.1.1/bits/parse_numbers.h

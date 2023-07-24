@@ -12,6 +12,7 @@ find_package(Vulkan REQUIRED)
 find_package(glm REQUIRED)
 
 add_definitions(-DShaderDir="${CMAKE_SOURCE_DIR}/Shaders/")
+add_definitions(-DModelDir="${CMAKE_SOURCE_DIR}/Models/")
 
 add_executable(game ${SOURCES})
 
