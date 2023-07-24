@@ -1,13 +1,15 @@
 #include "Mesh.h"
+#include <GLFW/glfw3.h>
 #include <Renderer.h>
 
 #include <assimp/types.h>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/geometric.hpp>
 #include <glm/gtx/transform.hpp>
-#include <ios>
 #include <iostream>
 #include <algorithm>
 #include <cstring>
@@ -55,7 +57,22 @@ std::vector<char> ReadFile(const std::string& FileName)
   return Buffer;
 }
 
-void Camera::PollInputs()
+void PrintMat(const char* Name, glm::mat4* Matrix)
+{
+  std::cout << "-------------" << Name << "-------------\n";
+  for(uint32_t i = 0; i < 4; i++)
+  {
+    for(uint32_t x = 0; x < 4; x++)
+    {
+      std::cout << (*Matrix)[x][i] << ' ';
+    }
+    std::cout << '\n';
+  }
+}
+
+
+
+void Camera::PollInputs(float DeltaTime)
 {
   Matrices.World = glm::mat4(1.f);
   Matrices.Proj = glm::perspective(glm::radians(90.f), ((float)pRenderer->Width/(float)pRenderer->Height), 0.1f, 1000.f);
@@ -78,63 +95,88 @@ void Camera::PollInputs()
 */
     if(glfwGetKey(pRenderer->Window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-      Rotation.x -= 1*Sensitivity;
+      Rotation.x += 1*Sensitivity;
     }
     if(glfwGetKey(pRenderer->Window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-      Rotation.x += 1*Sensitivity;
+      Rotation.x -= 1*Sensitivity;
     }
     if(glfwGetKey(pRenderer->Window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-      Rotation.y += 1*Sensitivity;
+      Rotation.y -= 1*Sensitivity;
     }
     if(glfwGetKey(pRenderer->Window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-      Rotation.y -= 1*Sensitivity;
+      Rotation.y += 1*Sensitivity;
     }
 
-    std::clamp(Rotation.y, -90.f, 90.f);
+    glm::vec3 MoveUp = glm::normalize(glm::vec3(Matrices.View[0][1], Matrices.View[1][1], Matrices.View[2][1]));
+    glm::vec3 Right = glm::normalize(glm::vec3(Matrices.View[0][0], Matrices.View[1][0], Matrices.View[2][0]));
+    glm::vec3 Forward = glm::normalize(glm::vec3(Matrices.View[0][2], Matrices.View[1][2], Matrices.View[2][2]));
+
+    float ShiftAffect = 1.f;
+
+    if(glfwGetKey(pRenderer->Window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    {
+      ShiftAffect = 0.5f;
+    }
+
+    if(glfwGetKey(pRenderer->Window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+      Position -= Forward*MoveSensitivity*ShiftAffect;
+    }
+    if(glfwGetKey(pRenderer->Window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+      Position += Forward*MoveSensitivity*ShiftAffect;
+    }
+    if(glfwGetKey(pRenderer->Window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+      Position -= Right*MoveSensitivity*ShiftAffect;
+    }
+    if(glfwGetKey(pRenderer->Window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+      Position += Right*MoveSensitivity*ShiftAffect;
+    }
+    if(glfwGetKey(pRenderer->Window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+      Position += MoveUp*MoveSensitivity*ShiftAffect;
+    }
+    if(glfwGetKey(pRenderer->Window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+      Position -= MoveUp*MoveSensitivity*ShiftAffect;
+    }
+
+    std::clamp(Rotation.x, -90.f, 90.f);
 
     CameraMat = glm::mat4(1.f);
 
-    glm::vec3 Up = glm::vec3(0.f, 1.f, 0.f);
-    CameraMat = glm::rotate(CameraMat, Rotation.x, Up);
-
-    glm::vec3 Right = glm::vec3(CameraMat[0][0], CameraMat[1][0], CameraMat[2][0]);
-    CameraMat = glm::rotate(CameraMat, Rotation.y, Right);
-
-    glm::vec3 Forward = glm::vec3(CameraMat[0][2], CameraMat[1][2], CameraMat[2][2]);
-    Forward *= -1.f; // forward direction is always z*-1
-    CameraMat = glm::rotate(CameraMat, Rotation.z, Forward);
-
     CameraMat = glm::translate(CameraMat, Position);
+
+    glm::vec3 Up = glm::vec3(0.f, 1.f, 0.f);
+    glm::vec3 LookRight = glm::vec3(CameraMat[0][0], CameraMat[1][0], CameraMat[2][0]);
+    glm::vec3 LookForward = glm::vec3(CameraMat[0][2], CameraMat[1][2], CameraMat[2][2]);
+
+    CameraMat = glm::rotate(CameraMat, glm::radians(Rotation.y), Up);
+
+    CameraMat = glm::rotate(CameraMat, glm::radians(Rotation.x), LookRight);
+
+    CameraMat = glm::rotate(CameraMat, glm::radians(Rotation.z), LookForward);
 
   Matrices.View = glm::inverse(CameraMat);
 }
 
-void PrintMat(const char* Name, glm::mat4* Matrix)
-{
-  std::cout << "-------------" << Name << "-------------\n";
-  for(uint32_t i = 0; i < 4; i++)
-  {
-    for(uint32_t x = 0; x < 4; x++)
-    {
-      std::cout << (*Matrix)[x][i] << ' ';
-    }
-    std::cout << '\n';
-  }
-}
-
-void Camera::Update()
+void Camera::Update(float DeltaTime)
 {
   VkResult Res;
+
+  glfwPollEvents();
 
   if(CameraBuffer.Allocation.AllocSize == -1)
   {
     pRenderer->CreateBuffer(&CameraBuffer, sizeof(glm::mat4) * 3, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, eHostMemory);
   }
 
-  PollInputs();
+  PollInputs(DeltaTime);
 
   void* BufferMemory;
   vkMapMemory(pRenderer->Device, *CameraBuffer.Allocation.Memory, CameraBuffer.Allocation.Offset, CameraBuffer.Allocation.AllocSize, 0, &BufferMemory);
@@ -420,6 +462,14 @@ void Renderer::CreateImageView(VkImageView* ImageView, VkImage* Image, VkFormat 
   {
     throw std::runtime_error("Failed to create image view with error: " + std::to_string(Res));
   }
+}
+
+float Renderer::GetDeltaTime()
+{
+  auto Time = std::chrono::steady_clock::now();
+  auto Res = (Time - PreviousTime);
+  PreviousTime = Time;
+  return Res.count();
 }
 
 void Renderer::GetMemoryIndices()

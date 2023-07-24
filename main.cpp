@@ -63,10 +63,12 @@ int main()
     BeginInf.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
     Renderer.WaitOnLastFrame();
+    float DeltaTime = Renderer.GetDeltaTime();
+    std::cout << "DeltaTime: " << DeltaTime << '\n';
 
     vkResetCommandBuffer(*RenderBuffer, 0);
 
-    Cam->Update();
+    Cam->Update(DeltaTime);
 
     Cube.Update();
 

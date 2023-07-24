@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-#include <vulkan/vulkan_core.h>
+#include <chrono>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -137,25 +137,26 @@ class Camera
 
     CameraMats Matrices;
 
-    void Update();
+    void Update(float DeltaTime);
 
     VkDescriptorSetLayout Layout;
 
   private:
-    void PollInputs();
+    void PollInputs(float DeltaTime);
 
     double LastMousePos[2];
 
     glm::vec3 Position = glm::vec3(0.f, 0.f, 10.f); // -z is forwards
     glm::vec3 Rotation = glm::vec3(0.f, 0.f, 0.f);
-    glm::mat4 CameraMat; // the camera matrix is the inverse of the view matrix, instead of transforming other things to it, it transforms itself relative to other things, therefore moving itself through space
+    glm::mat4 CameraMat = glm::mat4(1.f); // the camera matrix is the inverse of the view matrix, instead of transforming other things to it, it transforms itself relative to other things, therefore moving itself through space
 
     Buffer CameraBuffer;
     VkDescriptorSet CamDescriptor;
 
     Renderer* pRenderer;
 
-    float Sensitivity = 1.f;
+    float Sensitivity = 0.5f;
+    float MoveSensitivity = 0.05f;
 };
 
 typedef uint32_t EkTexture;
@@ -230,6 +231,8 @@ class Renderer
     void CreateImageView(VkImageView* ImageView, VkImage* Image, VkFormat Format, VkImageViewType ViewType, VkImageAspectFlags AspectMask);
     void CreateBuffer(Buffer* Buffer, uint32_t Size, VkBufferUsageFlags, eMemoryType Memory = eBufferMemory);
 
+    float GetDeltaTime();
+
     void CopyToBuffer(Buffer* Src, Buffer* Dst, VkBufferCopy CopyInfo);
     void CopyToImage(Buffer* Src, Texture* Dst, VkBufferImageCopy CopyInfo);
 
@@ -285,8 +288,10 @@ class Renderer
     VkSubpassDescription LightingPass;
     VkRenderPass Renderpass;
 
-    
     DescriptorPool ScenePool; // for camera, lights, etc
+
+    // Engine
+      std::chrono::time_point<std::chrono::steady_clock> PreviousTime;
 
     GLFWwindow* Window;
 };

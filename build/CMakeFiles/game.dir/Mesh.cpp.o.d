@@ -326,7 +326,8 @@ CMakeFiles/game.dir/Mesh.cpp.o: \
  /usr/include/c++/13.1.1/bits/this_thread_sleep.h \
  /usr/include/c++/13.1.1/bits/chrono.h /usr/include/c++/13.1.1/ratio \
  /usr/include/c++/13.1.1/ctime \
- /usr/include/c++/13.1.1/bits/parse_numbers.h /usr/include/GLFW/glfw3.h \
+ /usr/include/c++/13.1.1/bits/parse_numbers.h \
+ /usr/include/c++/13.1.1/chrono /usr/include/GLFW/glfw3.h \
  /usr/include/GL/gl.h /usr/include/GL/glext.h \
  /usr/include/KHR/khrplatform.h /usr/include/assimp/postprocess.h \
  /usr/include/vulkan/vk_enum_string_helper.h
