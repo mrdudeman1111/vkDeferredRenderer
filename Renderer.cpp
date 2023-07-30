@@ -78,7 +78,6 @@ void Camera::PollInputs(float DeltaTime)
   Matrices.Proj = glm::perspective(glm::radians(90.f), ((float)pRenderer->Width/(float)pRenderer->Height), 0.1f, 1000.f);
   Matrices.Proj[1][1] *= -1;
 
-/*
     double X, Y;
     glfwGetCursorPos(pRenderer->Window, &X, &Y);
 
@@ -90,9 +89,9 @@ void Camera::PollInputs(float DeltaTime)
     LastMousePos[0] = X;
     LastMousePos[1] = Y;
 
-    Rotation.x += (DeltaX * Sensitivity);
-    Rotation.y += (DeltaY * Sensitivity);
-*/
+    Rotation.y += (DeltaX * Sensitivity);
+    Rotation.x += (DeltaY * Sensitivity);
+  /*
     if(glfwGetKey(pRenderer->Window, GLFW_KEY_UP) == GLFW_PRESS)
     {
       Rotation.x += 1*Sensitivity;
@@ -109,6 +108,7 @@ void Camera::PollInputs(float DeltaTime)
     {
       Rotation.y += 1*Sensitivity;
     }
+  */
 
     glm::vec3 MoveUp = glm::normalize(glm::vec3(Matrices.View[0][1], Matrices.View[1][1], Matrices.View[2][1]));
     glm::vec3 Right = glm::normalize(glm::vec3(Matrices.View[0][0], Matrices.View[1][0], Matrices.View[2][0]));
@@ -146,7 +146,7 @@ void Camera::PollInputs(float DeltaTime)
       Position -= MoveUp*MoveSensitivity*ShiftAffect;
     }
 
-    std::clamp(Rotation.x, -90.f, 90.f);
+    Rotation.x = std::clamp(Rotation.x, -90.f, 90.f);
 
     CameraMat = glm::mat4(1.f);
 
@@ -161,6 +161,15 @@ void Camera::PollInputs(float DeltaTime)
     CameraMat = glm::rotate(CameraMat, glm::radians(Rotation.x), LookRight);
 
     CameraMat = glm::rotate(CameraMat, glm::radians(Rotation.z), LookForward);
+
+
+  if(glfwGetKey(pRenderer->Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+  {
+    Focus = (Focus) ? false : true;
+
+    if(Focus == true) glfwSetInputMode(pRenderer->Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    else glfwSetInputMode(pRenderer->Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  }
 
   Matrices.View = glm::inverse(CameraMat);
 }
@@ -896,6 +905,8 @@ void Renderer::Init(uint32_t inWidth, uint32_t inHeight)
   Window = glfwCreateWindow(Width, Height, "Game", NULL, NULL);
 
   glfwCreateWindowSurface(Instance, Window, nullptr, &Surface);
+
+  glfwSetInputMode(Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 Camera* Renderer::GetCamera()

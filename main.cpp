@@ -64,7 +64,6 @@ int main()
 
     Renderer.WaitOnLastFrame();
     float DeltaTime = Renderer.GetDeltaTime();
-    std::cout << "DeltaTime: " << DeltaTime << '\n';
 
     vkResetCommandBuffer(*RenderBuffer, 0);
 

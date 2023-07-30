@@ -14,6 +14,8 @@
 #include <vulkan/vk_enum_string_helper.h>
 #include <vulkan/vulkan_core.h>
 
+// Bug: all nodes are being loaded into armature, instead of just the bones.
+
 void MatConvert(aiMatrix4x4 aiMat, glm::mat4* OutMatrix)
 {
   for(uint32_t i = 0; i < 4; i++)
@@ -25,8 +27,20 @@ void MatConvert(aiMatrix4x4 aiMat, glm::mat4* OutMatrix)
   }
 }
 
+void CopyMat(glm::mat4* Matrix, float* Buffer)
+{
+  for(uint32_t i = 0; i > 4; i++)
+  {
+    for(uint32_t x = 0; x > 4; x++)
+    {
+      memcpy(Buffer + (i+x), &(*Matrix)[i][x], sizeof(float));
+    }
+  }
+}
+
 aiNode* FindNode(aiNode* pNode, const char* NodeName)
 {
+  aiNode* Ret;
   if(strcmp(pNode->mName.C_Str(), NodeName) == 0)
   {
     return pNode;
@@ -35,9 +49,9 @@ aiNode* FindNode(aiNode* pNode, const char* NodeName)
   {
     for(uint32_t i = 0; i < pNode->mNumChildren; i++)
     {
-      if(FindNode(pNode->mChildren[i], NodeName) != nullptr)
+      if((Ret = FindNode(pNode->mChildren[i], NodeName)) != nullptr)
       {
-        return pNode->mChildren[i];
+        return Ret;
       }
     }
   }
@@ -72,13 +86,13 @@ void MeshComponent::ParseMesh(const aiScene* pScene, aiMesh* pMesh)
   for(uint32_t i = 0; i < pMesh->mNumVertices; i++)
   {
     Vertex v;
-    v.Position.x = pMesh->mVertices[i].x;
-    v.Position.y = pMesh->mVertices[i].y;
-    v.Position.z = pMesh->mVertices[i].z;
+    v.Data.Position.x = pMesh->mVertices[i].x;
+    v.Data.Position.y = pMesh->mVertices[i].y;
+    v.Data.Position.z = pMesh->mVertices[i].z;
 
-    v.Normal.x = pMesh->mNormals[i].x;
-    v.Normal.y = pMesh->mNormals[i].y;
-    v.Normal.z = pMesh->mNormals[i].z;
+    v.Data.Normal.x = pMesh->mNormals[i].x;
+    v.Data.Normal.y = pMesh->mNormals[i].y;
+    v.Data.Normal.z = pMesh->mNormals[i].z;
 
     newMesh.Vertices.push_back(v);
   }
@@ -95,7 +109,16 @@ void MeshComponent::ParseMesh(const aiScene* pScene, aiMesh* pMesh)
 
   if(pMesh->HasBones())
   {
+    std::cout << "The mesh bone list contains:\n";
+    for(uint32_t i = 0; i < pMesh->mNumBones; i++)
+    {
+      std::cout << pMesh->mBones[i]->mName.C_Str() << ", ";
+    }
+    std::cout << std::endl;
+
     aiNode* Begin = FindNode(pScene->mRootNode, pMesh->mBones[0]->mName.C_Str());
+
+    std::cout << "Found Root Bone: " << Begin->mName.C_Str() << "\nTarget: " << pMesh->mBones[0]->mName.C_Str() << "\n";
 
     newMesh.Armature.RootBone.AsignNode(Begin);
 
@@ -104,6 +127,20 @@ void MeshComponent::ParseMesh(const aiScene* pScene, aiMesh* pMesh)
       // this will store the offset matrix in our bones now that we've setup the hierarchy
       Bone* Bone = newMesh.Armature.FindBone(pMesh->mBones[i]->mName.C_Str());
       Bone->BoneIdx = i;
+
+      for(uint32_t x = 0; x < pMesh->mBones[i]->mNumWeights; x++)
+      {
+        uint32_t vIdx = pMesh->mBones[i]->mWeights[x].mVertexId;
+        uint32_t vPushIdx = 0;
+
+        while(newMesh.Vertices[vIdx].Data.BoneIDs[vPushIdx] != -1 && vPushIdx < 4) vPushIdx++;
+
+        assert(vPushIdx < 4);
+
+        newMesh.Vertices[vIdx].Data.BoneIDs[vPushIdx] = Bone->BoneIdx;
+        newMesh.Vertices[vIdx].Data.BoneWeights[vPushIdx] = pMesh->mBones[i]->mWeights[x].mWeight;
+      }
+
       MatConvert(pMesh->mBones[i]->mOffsetMatrix, &Bone->Transform);
     }
   }
@@ -125,9 +162,11 @@ void Bone::AsignNode(aiNode* pNode)
   }
 }
 
-void Bone::PackBuffer(glm::mat4* BufferMemory)
+void Bone::PackBuffer(float* BufferMemory)
 {
-  BufferMemory[BoneIdx] = GetTransform();
+  float* dst = BufferMemory + (BoneIdx * sizeof(glm::mat4));
+  glm::mat4 Tran = GetTransform();
+  CopyMat(&Tran, dst);
 }
 
 glm::mat4 Bone::GetTransform()
@@ -157,9 +196,25 @@ Bone* Skeleton::FindBone(const char* pName)
   return RootBone.FindBone(pName);
 }
 
-void Skeleton::PackBuffer(glm::mat4* BufferMemory)
+void Skeleton::PackBuffer(float* BufferMemory)
 {
   RootBone.PackBuffer(BufferMemory);
+}
+
+void CleanBone(Bone* Bone)
+{
+  for(uint32_t i = 0; i < Bone->Children.size(); i++)
+  {
+    if(Bone->Children[i].BoneIdx == -1)
+    {
+      Bone->Children.erase(Bone->Children.begin() + i);
+    }
+  }
+}
+
+void Skeleton::Cleanup()
+{
+  CleanBone(&RootBone);
 }
 
 void Mesh::ZeroDescriptor(glm::mat4* Buffer)
@@ -192,7 +247,7 @@ void Mesh::UpdateSkeleton(Renderer* pRenderer)
     void* TransferMemory;
     vkMapMemory(pRenderer->Device, *Transfer.Allocation.Memory, Transfer.Allocation.Offset, Transfer.Allocation.AllocSize, 0, &TransferMemory);
       ZeroDescriptor((glm::mat4*)TransferMemory);
-      Armature.PackBuffer((glm::mat4*)TransferMemory);
+      Armature.PackBuffer((float*)TransferMemory);
     vkUnmapMemory(pRenderer->Device, *Transfer.Allocation.Memory);
 
     VkBufferCopy Copy{};

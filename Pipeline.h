@@ -22,14 +22,20 @@ enum ePassType
   eLighting = 1
 };
 
-class Vertex
+struct VertexData
 {
-public:
+  public:
     glm::vec3 Position;
     glm::vec3 Normal;
     glm::vec2 uvCoord = {0.f, 0.f};
-    glm::ivec4 BoneIDs = {-1, -1, -1, -1};
-    glm::fvec4 BoneWeights{0.f, 0.f, 0.f, 0.f};
+    std::vector<int> BoneIDs = {-1, -1, -1, -1};
+    glm::fvec4 BoneWeights = {0.f, 0.f, 0.f, 0.f};
+};
+
+class Vertex
+{
+public:
+  VertexData Data;
 
   std::vector<VkVertexInputBindingDescription> GetBindingDescription()
   {
@@ -47,28 +53,28 @@ public:
     std::vector<VkVertexInputAttributeDescription> Ret(5);
     Ret[0].binding = 0;
     Ret[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    Ret[0].offset = offsetof(Vertex, Position);
+    Ret[0].offset = offsetof(Vertex, Data.Position);
     Ret[0].location = 0;
 
     Ret[1].binding = 0;
     Ret[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    Ret[1].offset = offsetof(Vertex, Normal);
+    Ret[1].offset = offsetof(Vertex, Data.Normal);
     Ret[1].location = 1;
 
     Ret[2].binding = 0;
     Ret[2].format = VK_FORMAT_R32G32_SFLOAT;
-    Ret[2].offset = offsetof(Vertex, uvCoord);
+    Ret[2].offset = offsetof(Vertex, Data.uvCoord);
     Ret[2].location = 2;
 
     Ret[3].binding = 0;
     Ret[3].format = VK_FORMAT_R8G8B8A8_SINT;
-    Ret[3].offset = offsetof(Vertex, BoneIDs);
+    Ret[3].offset = offsetof(Vertex, Data.BoneIDs);
     Ret[3].location = 3;
 
     Ret[4].binding = 0;
     Ret[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
     Ret[4].location = 4;
-    Ret[4].offset = offsetof(Vertex, BoneWeights);
+    Ret[4].offset = offsetof(Vertex, Data.BoneWeights);
 
     return Ret;
   }

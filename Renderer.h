@@ -155,8 +155,10 @@ class Camera
 
     Renderer* pRenderer;
 
-    float Sensitivity = 0.5f;
+    float Sensitivity = 0.05f;
     float MoveSensitivity = 0.05f;
+
+    bool Focus = false;
 };
 
 typedef uint32_t EkTexture;

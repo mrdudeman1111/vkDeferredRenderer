@@ -47,7 +47,7 @@ void Pipeline::Init(VkDescriptorSetLayout CameraLayout)
   Raster.rasterizerDiscardEnable = VK_FALSE;
   Raster.polygonMode = VK_POLYGON_MODE_FILL;
   Raster.lineWidth = 1.f;
-  Raster.cullMode = VK_CULL_MODE_NONE;
+  Raster.cullMode = VK_CULL_MODE_BACK_BIT;
   Raster.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   Raster.depthBiasEnable = VK_FALSE;
 
@@ -140,9 +140,9 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, ePassType Type)
   Recipe.MultiSample.sampleShadingEnable = VK_FALSE;
   Recipe.MultiSample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-  VkPipelineColorBlendAttachmentState* ColorAttachment = new VkPipelineColorBlendAttachmentState{};
+  VkPipelineColorBlendAttachmentState* ColorAttachment = new VkPipelineColorBlendAttachmentState[3]{};
 
-  for(uint32_t i = 0; i < 1; i++)
+  for(uint32_t i = 0; i < 3; i++)
   {
     ColorAttachment[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     ColorAttachment[i].blendEnable = VK_FALSE;
@@ -163,7 +163,7 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, ePassType Type)
   Recipe.ColorBlend.logicOp = VK_LOGIC_OP_COPY;
   Recipe.ColorBlend.logicOpEnable = VK_FALSE;
   Recipe.ColorBlend.logicOp = VK_LOGIC_OP_COPY;
-  Recipe.ColorBlend.attachmentCount = 1;
+  Recipe.ColorBlend.attachmentCount = 3;
   Recipe.ColorBlend.pAttachments = ColorAttachment;
   Recipe.ColorBlend.blendConstants[0] = 0.0f;
   Recipe.ColorBlend.blendConstants[1] = 0.0f;

@@ -52,7 +52,7 @@ class Bone
   public:
     void AsignNode(aiNode* pNode);
     Bone* FindBone(const char* pName);
-    void PackBuffer(glm::mat4* BufferMemory);
+    void PackBuffer(float* BufferMemory);
 
     glm::mat4 GetTransform();
 
@@ -64,7 +64,7 @@ class Bone
 
     glm::mat4 Transform;
 
-    uint32_t BoneIdx;
+    uint32_t BoneIdx = -1;
 };
 
 class Skeleton
@@ -72,7 +72,8 @@ class Skeleton
   public:
     Bone RootBone;
     Bone* FindBone(const char* pName);
-    void PackBuffer(glm::mat4* BufferMemory);
+    void PackBuffer(float* BufferMemory);
+    void Cleanup();
 };
 
 class Mesh
