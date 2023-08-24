@@ -1,1 +1,1 @@
-/usr/bin/g++ -g CMakeFiles/game.dir/Descriptor.cpp.o CMakeFiles/game.dir/Mesh.cpp.o CMakeFiles/game.dir/Pipeline.cpp.o CMakeFiles/game.dir/Renderer.cpp.o CMakeFiles/game.dir/main.cpp.o -o game  -lvulkan -lglfw -lassimp 
+/usr/bin/g++ -g CMakeFiles/game.dir/Descriptor.cpp.o CMakeFiles/game.dir/FrameBuffer.cpp.o CMakeFiles/game.dir/Mesh.cpp.o CMakeFiles/game.dir/Pipeline.cpp.o CMakeFiles/game.dir/RenderPass.cpp.o CMakeFiles/game.dir/Renderer.cpp.o CMakeFiles/game.dir/Widget.cpp.o CMakeFiles/game.dir/main.cpp.o -o game  -lvulkan -lglfw -lassimp 

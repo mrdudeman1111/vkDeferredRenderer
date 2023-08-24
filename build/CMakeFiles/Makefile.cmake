@@ -8,9 +8,9 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
   "/run/media/ethanw/LinuxGames/Repos/Trolling/CMakeLists.txt"
-  "CMakeFiles/3.27.0/CMakeCCompiler.cmake"
-  "CMakeFiles/3.27.0/CMakeCXXCompiler.cmake"
-  "CMakeFiles/3.27.0/CMakeSystem.cmake"
+  "CMakeFiles/3.27.1/CMakeCCompiler.cmake"
+  "CMakeFiles/3.27.1/CMakeCXXCompiler.cmake"
+  "CMakeFiles/3.27.1/CMakeSystem.cmake"
   "/usr/lib/cmake/glm/glmConfig.cmake"
   "/usr/lib/cmake/glm/glmConfigVersion.cmake"
   "/usr/lib/cmake/glm/glmTargets.cmake"

@@ -22,14 +22,19 @@ enum ePassType
   eLighting = 1
 };
 
+enum eSpace
+{
+  e2D,
+  e3D
+};
+
 struct VertexData
 {
-  public:
-    glm::vec3 Position;
-    glm::vec3 Normal;
-    glm::vec2 uvCoord = {0.f, 0.f};
-    std::vector<int> BoneIDs = {-1, -1, -1, -1};
-    glm::fvec4 BoneWeights = {0.f, 0.f, 0.f, 0.f};
+  glm::vec3 Position;
+  glm::vec3 Normal;
+  glm::vec2 uvCoord = {0.f, 0.f};
+  std::vector<int> BoneIDs = {-1, -1, -1, -1};
+  glm::fvec4 BoneWeights = {0.f, 0.f, 0.f, 0.f};
 };
 
 class Vertex
@@ -80,6 +85,39 @@ public:
   }
 };
 
+struct VertexData2D
+{
+  glm::vec2 Position;
+};
+
+class Vertex2D
+{
+  public:
+    VertexData2D Data;
+
+    std::vector<VkVertexInputBindingDescription> GetBindingDescription()
+    {
+      std::vector<VkVertexInputBindingDescription> Ret(1);
+
+      Ret[0].stride = sizeof(Vertex2D);
+      Ret[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+      Ret[0].binding = 0;
+
+      return Ret;
+    }
+
+    std::vector<VkVertexInputAttributeDescription> GetAttributeDescription()
+    {
+      std::vector<VkVertexInputAttributeDescription> Ret(1);
+      Ret[0].binding = 0;
+      Ret[0].format = VK_FORMAT_R32G32_SFLOAT;
+      Ret[0].offset = offsetof(Vertex2D, Data.Position);
+      Ret[0].location = 0;
+
+      return Ret;
+    }
+};
+
 class PipelineRecipe
 {
 public:
@@ -105,7 +143,7 @@ class Shader
 {
 public:
   VkShaderModule sModule;
-  const char* EntryPoint;
+  std::string EntryPoint;
 };
 
 class Material
@@ -134,6 +172,12 @@ private:
 
 class Renderer;
 
+struct PipelineAttachment
+{
+  public:
+    bool Transparent;
+};
+
 class Pipeline
 {
   friend Renderer;
@@ -142,10 +186,10 @@ class Pipeline
 
     PipelineRecipe Recipe;
     VkPipelineLayout PipeLayout;
-    VkPipeline Pipe;
+    VkPipeline Pipe = VK_NULL_HANDLE;
 
     void Init(VkDescriptorSetLayout CameraLayout);
-    void BakeRecipe(uint32_t Width, uint32_t Height, ePassType Type);
+    void BakeRecipe(uint32_t Width, uint32_t Height, int X, int Y, eSpace SpaceType, ePassType Type, std::vector<PipelineAttachment> Attachments);
     VkDescriptorSet CreateDescriptor();
 
     Material Mat;

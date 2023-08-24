@@ -7,6 +7,12 @@
 },
 {
   "directory": "/run/media/ethanw/LinuxGames/Repos/Trolling/build",
+  "command": "/usr/bin/g++ -DModelDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Models/\\\" -DShaderDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Shaders/\\\" -I/run/media/ethanw/LinuxGames/Repos/Trolling -g -o CMakeFiles/game.dir/FrameBuffer.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/FrameBuffer.cpp",
+  "file": "/run/media/ethanw/LinuxGames/Repos/Trolling/FrameBuffer.cpp",
+  "output": "CMakeFiles/game.dir/FrameBuffer.cpp.o"
+},
+{
+  "directory": "/run/media/ethanw/LinuxGames/Repos/Trolling/build",
   "command": "/usr/bin/g++ -DModelDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Models/\\\" -DShaderDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Shaders/\\\" -I/run/media/ethanw/LinuxGames/Repos/Trolling -g -o CMakeFiles/game.dir/Mesh.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.cpp",
   "file": "/run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.cpp",
   "output": "CMakeFiles/game.dir/Mesh.cpp.o"
@@ -19,9 +25,21 @@
 },
 {
   "directory": "/run/media/ethanw/LinuxGames/Repos/Trolling/build",
+  "command": "/usr/bin/g++ -DModelDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Models/\\\" -DShaderDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Shaders/\\\" -I/run/media/ethanw/LinuxGames/Repos/Trolling -g -o CMakeFiles/game.dir/RenderPass.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/RenderPass.cpp",
+  "file": "/run/media/ethanw/LinuxGames/Repos/Trolling/RenderPass.cpp",
+  "output": "CMakeFiles/game.dir/RenderPass.cpp.o"
+},
+{
+  "directory": "/run/media/ethanw/LinuxGames/Repos/Trolling/build",
   "command": "/usr/bin/g++ -DModelDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Models/\\\" -DShaderDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Shaders/\\\" -I/run/media/ethanw/LinuxGames/Repos/Trolling -g -o CMakeFiles/game.dir/Renderer.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.cpp",
   "file": "/run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.cpp",
   "output": "CMakeFiles/game.dir/Renderer.cpp.o"
+},
+{
+  "directory": "/run/media/ethanw/LinuxGames/Repos/Trolling/build",
+  "command": "/usr/bin/g++ -DModelDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Models/\\\" -DShaderDir=\\\"/run/media/ethanw/LinuxGames/Repos/Trolling/Shaders/\\\" -I/run/media/ethanw/LinuxGames/Repos/Trolling -g -o CMakeFiles/game.dir/Widget.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/Widget.cpp",
+  "file": "/run/media/ethanw/LinuxGames/Repos/Trolling/Widget.cpp",
+  "output": "CMakeFiles/game.dir/Widget.cpp.o"
 },
 {
   "directory": "/run/media/ethanw/LinuxGames/Repos/Trolling/build",

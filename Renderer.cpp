@@ -1,23 +1,24 @@
 #include "Mesh.h"
+#include "Pipeline.h"
+#include "Widget.h"
 #include <GLFW/glfw3.h>
 #include <Renderer.h>
 
 #include <assimp/types.h>
+
 #include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <fstream>
+
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtx/transform.hpp>
-#include <iostream>
-#include <algorithm>
-#include <cstring>
-#include <stdexcept>
-#include <string>
-#include <system_error>
 
-#include <variant>
+#include <iostream>
+#include <cstring>
+#include <string>
+
 #include <vulkan/vk_enum_string_helper.h>
 #include <vulkan/vulkan_core.h>
 
@@ -36,6 +37,37 @@
 */
 
 // I've chosen a stack allocator for memory management
+
+UI* PrimaryUI;
+
+void ClickCallback(GLFWwindow* pWindow, int Button, int Action, int Mods)
+{
+  double Pos[2];
+  glfwGetCursorPos(pWindow, &Pos[0], &Pos[1]);
+  PrimaryUI->ClickEvent(Button, Action, Pos);
+}
+
+void UI::ClickEvent(int Button, int Action, double MousePos[2])
+{
+  for(uint32_t i = 0; i < Panes.size(); i++)
+  {
+    Panes[i].ClickEvent(MousePos);
+  }
+}
+
+void UI::AddPane(Renderer* pRender)
+{
+  Buffer vBuff, iBuff;
+
+  pRender->CreateBuffer(&vBuff, sizeof(Vertex2D) * 100, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, eBufferMemory);
+  pRender->CreateBuffer(&iBuff, sizeof(uint32_t) * 150, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, eBufferMemory);
+
+  EkWidget::EkUIPane Pane(vBuff, iBuff, &pRender->Device);
+
+  Panes.push_back(Pane);
+}
+
+// Todo: Read Sync Creation
 
 std::vector<char> ReadFile(const std::string& FileName)
 {
@@ -763,7 +795,8 @@ bool Renderer::RequestInstExt(const char* ExtensionName)
   for(uint32_t i = 0; i < ExtCount; i++)
   {
     if(strcmp(ExtProps[i].extensionName, ExtensionName) == 0)
-    { InstanceExtensions.push_back(ExtensionName);
+    {
+      InstanceExtensions.push_back(ExtensionName);
       return true;
     }
   }
@@ -907,6 +940,8 @@ void Renderer::Init(uint32_t inWidth, uint32_t inHeight)
   glfwCreateWindowSurface(Instance, Window, nullptr, &Surface);
 
   glfwSetInputMode(Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+  PrimaryUI = new UI();
 }
 
 Camera* Renderer::GetCamera()
@@ -1031,6 +1066,8 @@ bool Renderer::CreateDevice()
     }
   }
 
+  CreateCmdBuffers();
+
   return true;
 }
 
@@ -1074,6 +1111,7 @@ void Renderer::CreateSwapchain(VkPresentModeKHR PresentMode)
   }
 
   SurfaceFormat = SurfaceFormats[0];
+  RenderFormat = SurfaceFormat.format;
 
   VkExtent2D SwapExtent;
   SwapExtent.width = Width;
@@ -1103,6 +1141,49 @@ void Renderer::CreateSwapchain(VkPresentModeKHR PresentMode)
   vkGetSwapchainImagesKHR(Device, Swapchain, &ImageCount, nullptr);
   SwapchainImages.resize(ImageCount);
   vkGetSwapchainImagesKHR(Device, Swapchain, &ImageCount, SwapchainImages.data());
+
+  // Swapchain image
+    EkFrameBufferAttachment ColorAttachment;
+    ColorAttachment.IMG_Aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+    ColorAttachment.IMG_ViewType = VK_IMAGE_VIEW_TYPE_2D;
+    ColorAttachment.IMG_Format = RenderFormat;
+    ColorAttachment.IMG_Usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    ColorAttachment.FB_Layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    ColorAttachment.FB_Description.format = RenderFormat;
+    ColorAttachment.FB_Description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    ColorAttachment.FB_Description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    ColorAttachment.FB_Description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    ColorAttachment.FB_Description.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    ColorAttachment.FB_Description.samples = VK_SAMPLE_COUNT_1_BIT;
+    ColorAttachment.FB_Description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    ColorAttachment.FB_Description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    ColorAttachment.FB_Description.flags = 0;
+
+    ColorAttachment.Location = 0;
+
+  // UI Image
+    EkFrameBufferAttachment UIAttachment;
+    UIAttachment.IMG_Aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+    UIAttachment.IMG_ViewType = VK_IMAGE_VIEW_TYPE_2D;
+    UIAttachment.IMG_Format = RenderFormat; // so it will be easier to blend with the swapchain image.
+    UIAttachment.IMG_Usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    UIAttachment.FB_Layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    UIAttachment.FB_Description.format = RenderFormat;
+    UIAttachment.FB_Description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    UIAttachment.FB_Description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    UIAttachment.FB_Description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    UIAttachment.FB_Description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    UIAttachment.FB_Description.samples = VK_SAMPLE_COUNT_1_BIT;
+    UIAttachment.FB_Description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    UIAttachment.FB_Description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    UIAttachment.FB_Description.flags = 0;
+
+    UIAttachment.Location = 1;
+
+  AddFrameBufferAttachment(&ColorAttachment, eColor);
+  AddFrameBufferAttachment(&UIAttachment, eColor);
 }
 
 void Renderer::MakeSceneDescriptorPool()
@@ -1122,212 +1203,6 @@ void Renderer::MakeSceneDescriptorPool()
 
     PrimCamera.CamDescriptor = ScenePool.MakeDescriptor();
     PrimCamera.Layout = *ScenePool.GetLayout();
-}
-
-void Renderer::CreateRenderPass()
-{
-  /*
-     this is a difficult function, you need to know what attachments you want to have in your framebuffers ahead of time.
-    in this case, we need a color buffer(SwapchainImage), a normal buffer, and a depthbuffer.
-    on top of knowing what buffers(images) we want in our framebuffers, we need to know what format to use.
-    the color buffer's format is already known, we define it in the VkSwapchainCreateInfoKHR structure when we created our swapchain.
-    but the normal and depth we have to figure out.
-    the depth buffer only does one thing, it tells us how far away a surface is from the screen, Because of this, we can just use one channel, we will use a depth format.
-    and the normal buffer tells use where a face is pointing, because we are making a *3D* Renderer, we need to store 3 values (XYZ), so we will use an RGB format.
-  */
-
-  VkResult Res;
-
-
-  /* Defining the structure of the framebuffer / Framebuffer specific */
-    VkAttachmentReference AttRefs[3]; // Color, pos, norm
-    VkAttachmentReference pDepth;
-    VkAttachmentDescription Descriptions[4] = {{}, {}, {}, {}}; // Color, Pos, Normal, Depth
-
-    // Color
-    Descriptions[0].format = SurfaceFormat.format;
-    Descriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    Descriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    Descriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
-    Descriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    Descriptions[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    Descriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    Descriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-
-    // Pos
-    Descriptions[1].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    Descriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    Descriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    Descriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    Descriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    Descriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    Descriptions[1].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    Descriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
-
-    // Normal
-    Descriptions[2].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-    Descriptions[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    Descriptions[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    Descriptions[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    Descriptions[2].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    Descriptions[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    Descriptions[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    Descriptions[2].samples = VK_SAMPLE_COUNT_1_BIT;
-
-    // Depth
-    Descriptions[3].format = VK_FORMAT_D16_UNORM;
-    Descriptions[3].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    Descriptions[3].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    Descriptions[3].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    Descriptions[3].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    Descriptions[3].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    Descriptions[3].stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-    Descriptions[3].samples = VK_SAMPLE_COUNT_1_BIT;
-  /* Defining the structure of the framebuffer / Framebuffer specific */
-
-  AttRefs[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  AttRefs[0].attachment = 0;
-
-  AttRefs[1].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  AttRefs[1].attachment = 1;
-
-  AttRefs[2].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  AttRefs[2].attachment = 2;
-
-  pDepth.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-  pDepth.attachment = 3;
-
-  VkSubpassDescription Subpasses[1];
-
-  // this subpass doesn't use the normal or position attachments
-  Subpasses[0] = {}; // fill with 0/defaults
-  Subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  Subpasses[0].colorAttachmentCount = 3;
-  Subpasses[0].pColorAttachments = AttRefs;
-  Subpasses[0].pDepthStencilAttachment = &pDepth;
-
-  VkSubpassDependency Deps[2] = { {}, {} };
-
-  Deps[0].srcSubpass = 0;
-  Deps[0].dstSubpass = 0;
-  Deps[0].srcStageMask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-  Deps[0].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-  Deps[0].srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-  Deps[0].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-  Deps[1].srcSubpass = VK_SUBPASS_EXTERNAL;
-  Deps[1].dstSubpass = 0;
-  Deps[1].srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-  Deps[1].srcAccessMask = 0;
-  Deps[1].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-  Deps[1].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-/*
-  Subpasses[1] = {};
-  Subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  Subpasses[1].colorAttachmentCount = 3;
-  Subpasses[1].pColorAttachments = AttRefs;
-  Subpasses[1].pDepthStencilAttachment = &pDepth;
-*/
-
-/*
-  VkSubpassDependency LightingDependencies{};
-  LightingDependencies.srcSubpass = 0;
-  LightingDependencies.dstSubpass = 1;
-  LightingDependencies.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-  LightingDependencies.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-  LightingDependencies.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-  LightingDependencies.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-*/
-  // the fragment shader from the G-pass needs to finish writing to the Framebuffer before the lighting pass is executed
-
-  VkRenderPassCreateInfo RenderpassInfo{};
-  RenderpassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  RenderpassInfo.subpassCount = 1;
-  RenderpassInfo.pSubpasses = Subpasses;
-  RenderpassInfo.dependencyCount = 2;
-  RenderpassInfo.pDependencies = Deps;
-  RenderpassInfo.attachmentCount = 4;
-  RenderpassInfo.pAttachments = Descriptions;
-
-/*
-  RenderpassInfo.dependencyCount = 1;
-  RenderpassInfo.pDependencies = &LightingDependencies;
-*/
-
-  if((Res = vkCreateRenderPass(Device, &RenderpassInfo, nullptr, &Renderpass)) != VK_SUCCESS)
-  {
-    throw std::runtime_error("failed to create renderpass with error: " + std::to_string(Res));
-  }
-
-  MakeSceneDescriptorPool();
-}
-
-void Renderer::CreateFrameBuffers()
-{
-  VkResult Res;
-
-  SwapchainImageViews.resize(SwapchainImages.size());
-  DepthImages.resize(SwapchainImages.size()); DepthImageViews.resize(SwapchainImages.size());
-  NormImages.resize(SwapchainImages.size()); NormImageViews.resize(SwapchainImages.size());
-  PosImages.resize(SwapchainImages.size()); PosImageViews.resize(SwapchainImageViews.size());
-
-  FrameBuffers.resize(SwapchainImages.size());
-
-  RenderDone.resize(SwapchainImages.size());
-  RenderReady.resize(SwapchainImages.size());
-  RenderSubmit.resize(SwapchainImages.size());
-
-  VkSemaphoreCreateInfo SemCI{};
-  SemCI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-  VkFenceCreateInfo FenceCI{};
-  FenceCI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-  FenceCI.flags = VK_FENCE_CREATE_SIGNALED_BIT; // this flag means the fence will be in signaled state at creation.
-
-  for(uint32_t i = 0; i < SwapchainImages.size(); i++)
-  {
-    CreateImage(&DepthImages[i], VK_FORMAT_D16_UNORM, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-
-    CreateImage(&NormImages[i], VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-
-    CreateImage(&PosImages[i], VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-
-    CreateImageView(&SwapchainImageViews[i], &SwapchainImages[i], SurfaceFormat.format, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
-    CreateImageView(&PosImageViews[i], &PosImages[i].Image, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
-    CreateImageView(&DepthImageViews[i], &DepthImages[i].Image, VK_FORMAT_D16_UNORM, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_DEPTH_BIT);
-    CreateImageView(&NormImageViews[i], &NormImages[i].Image, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
-
-    VkImageView Atts[4] = { SwapchainImageViews[i], PosImageViews[i], NormImageViews[i], DepthImageViews[i] };
-
-    VkFramebufferCreateInfo FrameBufferCI{};
-    FrameBufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    FrameBufferCI.width = Width;
-    FrameBufferCI.height = Height;
-    FrameBufferCI.renderPass = Renderpass;
-    FrameBufferCI.attachmentCount = 4;
-    FrameBufferCI.pAttachments = Atts;
-    FrameBufferCI.layers = 1;
-
-    if((Res = vkCreateFramebuffer(Device, &FrameBufferCI, nullptr, &FrameBuffers[i])) != VK_SUCCESS)
-    {
-      throw std::runtime_error("Failed to create framebuffer with error: " + std::to_string(Res));
-    }
-
-    if((Res = vkCreateSemaphore(Device, &SemCI, nullptr, &RenderSubmit[i])) != VK_SUCCESS)
-    {
-      throw std::runtime_error("Failed to create syncing structure for framebuffer at index " + std::to_string(i) + " with error " + std::to_string(Res));
-    }
-
-    if((Res = vkCreateSemaphore(Device, &SemCI, nullptr, &RenderReady[i])) != VK_SUCCESS)
-    {
-      throw std::runtime_error("Failed to create syncing structure for framebuffer at index " + std::to_string(i) + " with error " + std::to_string(Res));
-    }
-
-    if((Res = vkCreateFence(Device, &FenceCI, nullptr, &RenderDone[i])) != VK_SUCCESS)
-    {
-      throw std::runtime_error("Failed to create syncing structure for framebuffer at index " + std::to_string(i) + " with error " + std::to_string(Res));
-    }
-  }
 }
 
 Material Renderer::CreateMat()
@@ -1360,26 +1235,64 @@ Shader Renderer::CreateShader(const char* ShaderPath, const char* EntryPoint)
   return Ret;
 }
 
-Pipeline Renderer::CreatePipeline(Material Mat)
+Pipeline Renderer::CreatePipeline(Material Mat, eSpace SpaceType, uint32_t Width, uint32_t Height, int X, int Y)
 {
   Pipeline Ret(&Device, &Renderpass);
 
   Ret.Mat = Mat;
 
-  Ret.BakeRecipe(Width, Height, ePassType::ePrimary);
+  std::vector<PipelineAttachment> PipeAtts(AttachmentInfo.size());
+
+  for(uint32_t i = 0; i < AttachmentInfo.size(); i++)
+  {
+    PipeAtts[i].Transparent = AttachmentInfo[i].Transparency;
+  }
+
+  Ret.BakeRecipe(Width, Height, X, Y, SpaceType, ePassType::ePrimary, PipeAtts);
   Ret.Init(PrimCamera.Layout);
 
   return Ret;
+}
+
+void Renderer::CreateUIPane()
+{
+  if(UIPipe.Pipe != VK_NULL_HANDLE)
+  {
+    PrimaryUI->AddPane(this);
+  }
+  else
+  {
+    Material UIMat = CreateMat();
+
+    Shader Vert = CreateShader(ShaderDir"UIVert.spv", "main");
+    Shader Frag = CreateShader(ShaderDir"UIFrag.spv", "main");
+
+    UIMat.VertShader = &Vert;
+    UIMat.FragShader = &Frag;
+
+    std::vector<PipelineAttachment> PipeAtts(1);
+    PipeAtts[0].Transparent = true;
+
+    UIPipe.BakeRecipe(1280, 720, 0, 0, e2D, ePrimary, PipeAtts);
+    UIPipe.Init(PrimCamera.Layout);
+  }
 }
 
 void Renderer::WaitOnLastFrame()
 {
   // that huge weird conditional checks if the FrameIndex-1 is less than zero, if it is we need to reach around to the front of the array.
   vkWaitForFences(Device, 1, &RenderDone[0], VK_TRUE, UINT64_MAX);
+
+  if(UIPipe.Pipe != VK_NULL_HANDLE)
+  {
+    vkWaitForFences(Device, 1, &RenderDone[1], VK_TRUE, UINT64_MAX);
+    vkResetFences(Device, 1, &RenderDone[1]);
+  }
+
   vkResetFences(Device, 1, &RenderDone[0]);
 }
 
-void Renderer::BeginRenderPass(VkCommandBuffer* pBuff)
+void Renderer::BeginRenderPass(VkCommandBuffer* pBuff, VkRect2D RenderArea)
 {
   vkAcquireNextImageKHR(Device, Swapchain, UINT64_MAX, RenderReady[0], VK_NULL_HANDLE, &ImageIndex);
 
@@ -1406,12 +1319,6 @@ void Renderer::BeginRenderPass(VkCommandBuffer* pBuff)
   Clear[3].depthStencil.depth = 1.f;
 
 
-  VkRect2D RenderArea{};
-  RenderArea.extent.width = Width;
-  RenderArea.extent.height = Height;
-  RenderArea.offset.x = 0;
-  RenderArea.offset.y = 0;
-
   VkRenderPassBeginInfo BeginInf{};
   BeginInf.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   BeginInf.renderPass = Renderpass;
@@ -1431,6 +1338,11 @@ void Renderer::EndRenderPass(VkCommandBuffer* pBuff)
 // will wait on RenderSubmit
 void Renderer::Present()
 {
+  if(UIPipe.Pipe != VK_NULL_HANDLE)
+  {
+    RenderUI();
+  }
+
   VkPresentInfoKHR PresentInfo{};
   PresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   PresentInfo.swapchainCount = 1;
@@ -1442,5 +1354,31 @@ void Renderer::Present()
   vkQueuePresentKHR(GraphicsDispatch.Queue, &PresentInfo);
 
   FrameIndex = (FrameIndex + 1) % FrameBuffers.size();
+}
+
+void Renderer::RenderUI()
+{
+  if(cmdUIBuffer == nullptr)
+  {
+    cmdUIBuffer = GraphicsDispatch.GetRenderBuffer(&Device);
+  }
+
+  vkResetCommandBuffer(*cmdUIBuffer, 0);
+
+  VkCommandBufferBeginInfo BeginInfo{};
+  BeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+  vkBeginCommandBuffer(*cmdUIBuffer, &BeginInfo);
+
+  vkCmdBindPipeline(*cmdUIBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, UIPipe.Pipe);
+
+  for(uint32_t i = 0; i < PrimaryUI->Panes.size(); i++)
+  {
+    PrimaryUI->Panes[i].Draw(cmdUIBuffer, Width, Height);
+  }
+
+  vkCmdEndRenderPass(*cmdUIBuffer);
+
+  GraphicsDispatch.SubmitRenderBuffer(cmdUIBuffer, &RenderDone[1]);
 }
 

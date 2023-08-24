@@ -1,25 +1,30 @@
 #pragma once
 
+#include "Pipeline.h"
 #include <cstddef>
 #include <glm/fwd.hpp>
 #include <iostream>
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <vulkan/vulkan_core.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #include <Mesh.h>
+#include <Widget.h>
 
-// 4 DescSets at a time
+// 4 DescSets at a time mobile
+// 16 DescSets at a time Dedicated
 
-// Parralel matrix computation when computing bone spaces per frmae
+// Parralel matrix computation when computing bone spaces per frame
 
 class Renderer;
 class CommandDispatch;
 struct Texture;
 struct Buffer;
+struct EkSubpass;
 
 const uint32_t sceneMaxSkeletons = 1024;
 
@@ -37,6 +42,23 @@ enum eMemoryType
   eBufferMemory = 3,
   eMeshMemory = 4,
   eHostMemory = 5
+};
+
+enum eAttachmentType
+{
+  eColor = 1,
+  eDepth = 2,
+  ePreserve = 3,
+  eInput = 4,
+  eResolve = 5
+};
+
+struct UI
+{
+  public:
+    std::vector<EkWidget::EkUIPane> Panes;
+    void AddPane(Renderer* pRender);
+    void ClickEvent(int Button, int Action, double MousePos[2]);
 };
 
 // Linux Implementation
@@ -161,6 +183,48 @@ class Camera
     bool Focus = false;
 };
 
+struct EkFrameBufferAttachment
+{
+  public:
+    uint32_t Location;
+    bool Transparency = false;
+
+    VkAttachmentDescription FB_Description;
+    VkImageLayout FB_Layout;
+
+    VkImageUsageFlags IMG_Usage;
+    VkFormat IMG_Format;
+    VkImageAspectFlags IMG_Aspect;
+    VkImageViewType IMG_ViewType;
+};
+
+struct EkSubpassDependency
+{
+  public:
+    VkAccessFlags srcAccess;
+    VkAccessFlags dstAccess;
+    VkPipelineStageFlags srcStage;
+    VkPipelineStageFlags dstStage;
+
+    uint32_t dstSubpass;
+};
+
+struct EkSubpass
+{
+  friend Renderer;
+  public:
+    VkPipelineBindPoint BindPoint;
+
+    void AddAttachment(uint32_t Location, eAttachmentType AttType);
+
+    void AddDependency(EkSubpassDependency Dependency);
+
+  private:
+    std::vector<EkSubpassDependency> Dependencies;
+    std::map<uint32_t, eAttachmentType> Attachments; // Location, AttType
+};
+
+
 typedef uint32_t EkTexture;
 typedef uint32_t EkBuffer;
 
@@ -190,7 +254,7 @@ class Renderer
 
     VkDevice Device;
 
-    Renderer() : PrimCamera(this), ScenePool(&Device, 3)
+    Renderer() : PrimCamera(this), ScenePool(&Device, 3), UIPipe(&Device, &Renderpass)
     {
 
     }
@@ -206,25 +270,32 @@ class Renderer
     bool RequestDevLayer(const char* LayerName);
     bool RequestDevExt(const char* ExtName);
 
+
     void Init(uint32_t inWidth, uint32_t inHeight);
 
-    // brief: Don't call this before CreateRenderPass()
-    Camera* GetCamera();
-    VkDescriptorSet GetCameraDescriptor();
     bool CreateDevice();
 
-    void CreateCmdBuffers();
     void CreateSwapchain(VkPresentModeKHR PresentMode);
-    void CreateRenderPass();
-    void CreateFrameBuffers();
+
+    // Renderpass.cpp
+      void CreateRenderPass(EkSubpass* Subpasses, uint32_t SubpassCount);
+
+    // FrameBuffer.cpp
+      void AddFrameBufferAttachment(EkFrameBufferAttachment* Attachment, eAttachmentType Type);
+      void CreateFrameBuffers();
+
     Material CreateMat();
     Shader CreateShader(const char* ShaderPath, const char* EntryPoint);
-    Pipeline CreatePipeline(Material Mat);
+    Pipeline CreatePipeline(Material Mat, eSpace SpaceType, uint32_t Width, uint32_t Height, int X, int Y);
+
+    void CreateUIPane();
 
     void WaitOnLastFrame();
-    void BeginRenderPass(VkCommandBuffer* pBuff);
+    void BeginRenderPass(VkCommandBuffer* pBuff, VkRect2D RenderArea);
     void EndRenderPass(VkCommandBuffer* pBuff);
     void Present();
+
+    void RenderUI();
 
     bool ShouldClose() { return glfwWindowShouldClose(Window); }
 
@@ -235,6 +306,10 @@ class Renderer
 
     float GetDeltaTime();
 
+    // brief: Don't call this before CreateRenderPass()
+    Camera* GetCamera();
+    VkDescriptorSet GetCameraDescriptor();
+
     void CopyToBuffer(Buffer* Src, Buffer* Dst, VkBufferCopy CopyInfo);
     void CopyToImage(Buffer* Src, Texture* Dst, VkBufferImageCopy CopyInfo);
 
@@ -243,9 +318,19 @@ class Renderer
     std::vector<VkSemaphore> RenderSubmit;
     std::vector<VkSemaphore> RenderReady;
     std::vector<VkFence> RenderDone;
+
+    VkFormat RenderFormat;
+
   private:
     void GetMemoryIndices();
     void MakeSceneDescriptorPool();
+
+    void CreateCmdBuffers();
+
+    // Renderpass.cpp
+      VkSubpassDescription PrimPass;
+      VkSubpassDescription LightingPass;
+      VkRenderPass Renderpass;
 
     Camera PrimCamera;
     uint32_t Width;
@@ -276,24 +361,22 @@ class Renderer
     VkSurfaceKHR Surface;
     VkSwapchainKHR Swapchain;
 
-    std::vector<VkImage> SwapchainImages; // color attachment for framebuffers
-    std::vector<VkImageView> SwapchainImageViews;
-    std::vector<Texture> PosImages;
-    std::vector<VkImageView> PosImageViews;
-    std::vector<Texture> DepthImages;
-    std::vector<VkImageView> DepthImageViews;
-    std::vector<Texture> NormImages;
-    std::vector<VkImageView> NormImageViews;
-    std::vector<VkFramebuffer> FrameBuffers;
+    // FrameBuffer.cpp
+      std::vector<VkImage> SwapchainImages;
 
-    VkSubpassDescription PrimPass;
-    VkSubpassDescription LightingPass;
-    VkRenderPass Renderpass;
+      std::vector<EkFrameBufferAttachment> AttachmentInfo;
+      EkFrameBufferAttachment* DepthAttachment;
+      std::vector<Texture> Attachments;
+      std::vector<VkImageView> AttachmentViews;
+      std::vector<VkFramebuffer> FrameBuffers;
 
     DescriptorPool ScenePool; // for camera, lights, etc
 
     // Engine
       std::chrono::time_point<std::chrono::steady_clock> PreviousTime;
+
+    Pipeline UIPipe;
+    VkCommandBuffer* cmdUIBuffer = nullptr;
 
     GLFWwindow* Window;
 };

@@ -9,9 +9,12 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/run/media/ethanw/LinuxGames/Repos/Trolling/Descriptor.cpp" "CMakeFiles/game.dir/Descriptor.cpp.o" "gcc" "CMakeFiles/game.dir/Descriptor.cpp.o.d"
+  "/run/media/ethanw/LinuxGames/Repos/Trolling/FrameBuffer.cpp" "CMakeFiles/game.dir/FrameBuffer.cpp.o" "gcc" "CMakeFiles/game.dir/FrameBuffer.cpp.o.d"
   "/run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.cpp" "CMakeFiles/game.dir/Mesh.cpp.o" "gcc" "CMakeFiles/game.dir/Mesh.cpp.o.d"
   "/run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.cpp" "CMakeFiles/game.dir/Pipeline.cpp.o" "gcc" "CMakeFiles/game.dir/Pipeline.cpp.o.d"
+  "/run/media/ethanw/LinuxGames/Repos/Trolling/RenderPass.cpp" "CMakeFiles/game.dir/RenderPass.cpp.o" "gcc" "CMakeFiles/game.dir/RenderPass.cpp.o.d"
   "/run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.cpp" "CMakeFiles/game.dir/Renderer.cpp.o" "gcc" "CMakeFiles/game.dir/Renderer.cpp.o.d"
+  "/run/media/ethanw/LinuxGames/Repos/Trolling/Widget.cpp" "CMakeFiles/game.dir/Widget.cpp.o" "gcc" "CMakeFiles/game.dir/Widget.cpp.o.d"
   "/run/media/ethanw/LinuxGames/Repos/Trolling/main.cpp" "CMakeFiles/game.dir/main.cpp.o" "gcc" "CMakeFiles/game.dir/main.cpp.o.d"
   )
 

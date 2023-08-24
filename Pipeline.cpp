@@ -82,7 +82,7 @@ void Pipeline::Init(VkDescriptorSetLayout CameraLayout)
   }
 }
 
-void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, ePassType Type)
+void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, int X, int Y, eSpace SpaceType, ePassType Type, std::vector<PipelineAttachment> Attachments)
 {
   VkResult Res;
 
@@ -103,12 +103,12 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, ePassType Type)
   Recipe.StageInfos = {{},{}};
   Recipe.StageInfos[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   Recipe.StageInfos[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-  Recipe.StageInfos[0].pName = Mat.VertShader->EntryPoint;
+  Recipe.StageInfos[0].pName = Mat.VertShader->EntryPoint.data();
   Recipe.StageInfos[0].module = Mat.VertShader->sModule;
 
   Recipe.StageInfos[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
   Recipe.StageInfos[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-  Recipe.StageInfos[1].pName = Mat.FragShader->EntryPoint;
+  Recipe.StageInfos[1].pName = Mat.FragShader->EntryPoint.data();
   Recipe.StageInfos[1].module = Mat.FragShader->sModule;
 
   if(Mat.GeomShader)
@@ -116,15 +116,28 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, ePassType Type)
     Recipe.StageInfos.push_back({});
     Recipe.StageInfos[2].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     Recipe.StageInfos[2].stage = VK_SHADER_STAGE_GEOMETRY_BIT;
-    Recipe.StageInfos[2].pName = Mat.GeomShader->EntryPoint;
+    Recipe.StageInfos[2].pName = Mat.GeomShader->EntryPoint.data();
     Recipe.StageInfos[2].module = Mat.GeomShader->sModule;
   }
 
   Recipe.StageInfos.shrink_to_fit();
 
-  Vertex V;
-  Recipe.inBindings = V.GetBindingDescription();
-  Recipe.inAttribs = V.GetAttributeDescription();
+  if(SpaceType == e3D)
+  {
+    Vertex V;
+    Recipe.inBindings = V.GetBindingDescription();
+    Recipe.inAttribs = V.GetAttributeDescription();
+  }
+  else if(SpaceType == e2D)
+  {
+    Vertex2D V;
+    Recipe.inBindings = V.GetBindingDescription();
+    Recipe.inAttribs = V.GetAttributeDescription();
+  }
+  else
+  {
+    std::cout << "what space type is this pipeline!?\n";
+  }
 
   Recipe.pDepthStencilInfo = {}; // fill with defaults
   Recipe.pDepthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -140,12 +153,34 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, ePassType Type)
   Recipe.MultiSample.sampleShadingEnable = VK_FALSE;
   Recipe.MultiSample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-  VkPipelineColorBlendAttachmentState* ColorAttachment = new VkPipelineColorBlendAttachmentState[3]{};
+  VkPipelineColorBlendAttachmentState* ColorAttachment = new VkPipelineColorBlendAttachmentState[Attachments.size()]{};
 
-  for(uint32_t i = 0; i < 3; i++)
+  for(uint32_t i = 0; i < Attachments.size(); i++)
   {
-    ColorAttachment[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    ColorAttachment[i].blendEnable = VK_FALSE;
+    if(Attachments[i].Transparent)
+    {
+      // this will write over full RGBA.
+        ColorAttachment[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
+      // Fully overwrite areas being BLIT ed to the final image.
+        ColorAttachment[i].colorBlendOp = VK_BLEND_OP_SRC_EXT;
+        ColorAttachment[i].alphaBlendOp = VK_BLEND_OP_SRC_EXT;
+
+      // Blend areas with only a factor of more than zero. else, it is not effected.
+        ColorAttachment[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        ColorAttachment[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_DST_ALPHA;
+
+      // Hard code to prevent the other output buffers from being affected from rendering UI
+        ColorAttachment[i].srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+        ColorAttachment[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+
+      ColorAttachment[i].blendEnable = VK_TRUE;
+    }
+    else
+    {
+      ColorAttachment[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+      ColorAttachment[i].blendEnable = VK_FALSE;
+    }
   }
 
 /*
@@ -163,25 +198,28 @@ void Pipeline::BakeRecipe(uint32_t inWidth, uint32_t inHeight, ePassType Type)
   Recipe.ColorBlend.logicOp = VK_LOGIC_OP_COPY;
   Recipe.ColorBlend.logicOpEnable = VK_FALSE;
   Recipe.ColorBlend.logicOp = VK_LOGIC_OP_COPY;
-  Recipe.ColorBlend.attachmentCount = 3;
+  Recipe.ColorBlend.attachmentCount = Attachments.size();
   Recipe.ColorBlend.pAttachments = ColorAttachment;
-  Recipe.ColorBlend.blendConstants[0] = 0.0f;
-  Recipe.ColorBlend.blendConstants[1] = 0.0f;
-  Recipe.ColorBlend.blendConstants[2] = 0.0f;
-  Recipe.ColorBlend.blendConstants[3] = 0.0f;
+
+  // this is a constant blend factor, which means that this will be the minimum blend factor for EVERY attachment in the framebuffer,
+  // meaning the output color will be a blend of every attachment's corresponding color.
+    Recipe.ColorBlend.blendConstants[0] = 0.0f;
+    Recipe.ColorBlend.blendConstants[1] = 0.0f;
+    Recipe.ColorBlend.blendConstants[2] = 0.0f;
+    Recipe.ColorBlend.blendConstants[3] = 0.0f;
 
   VkRect2D* Scissor = new VkRect2D;
   Scissor->extent.width = inWidth;
   Scissor->extent.height = inHeight;
-  Scissor->offset.x = 0;
-  Scissor->offset.y = 0;
+  Scissor->offset.x = X;
+  Scissor->offset.y = Y;
 
   Recipe.Viewport.width = inWidth;
   Recipe.Viewport.height = inHeight;
   Recipe.Viewport.minDepth = 0.f;
   Recipe.Viewport.maxDepth = 1.f;
-  Recipe.Viewport.x = 0;
-  Recipe.Viewport.y = 0;
+  Recipe.Viewport.x = X;
+  Recipe.Viewport.y = Y;
 
   Recipe.ViewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
   Recipe.ViewportInfo.scissorCount = 1;

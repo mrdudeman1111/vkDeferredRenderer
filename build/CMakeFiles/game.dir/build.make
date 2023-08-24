@@ -83,10 +83,24 @@ CMakeFiles/game.dir/Descriptor.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/game.dir/Descriptor.cpp.s"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /run/media/ethanw/LinuxGames/Repos/Trolling/Descriptor.cpp -o CMakeFiles/game.dir/Descriptor.cpp.s
 
+CMakeFiles/game.dir/FrameBuffer.cpp.o: CMakeFiles/game.dir/flags.make
+CMakeFiles/game.dir/FrameBuffer.cpp.o: /run/media/ethanw/LinuxGames/Repos/Trolling/FrameBuffer.cpp
+CMakeFiles/game.dir/FrameBuffer.cpp.o: CMakeFiles/game.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/game.dir/FrameBuffer.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/game.dir/FrameBuffer.cpp.o -MF CMakeFiles/game.dir/FrameBuffer.cpp.o.d -o CMakeFiles/game.dir/FrameBuffer.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/FrameBuffer.cpp
+
+CMakeFiles/game.dir/FrameBuffer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/game.dir/FrameBuffer.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /run/media/ethanw/LinuxGames/Repos/Trolling/FrameBuffer.cpp > CMakeFiles/game.dir/FrameBuffer.cpp.i
+
+CMakeFiles/game.dir/FrameBuffer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/game.dir/FrameBuffer.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /run/media/ethanw/LinuxGames/Repos/Trolling/FrameBuffer.cpp -o CMakeFiles/game.dir/FrameBuffer.cpp.s
+
 CMakeFiles/game.dir/Mesh.cpp.o: CMakeFiles/game.dir/flags.make
 CMakeFiles/game.dir/Mesh.cpp.o: /run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.cpp
 CMakeFiles/game.dir/Mesh.cpp.o: CMakeFiles/game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/game.dir/Mesh.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/game.dir/Mesh.cpp.o"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/game.dir/Mesh.cpp.o -MF CMakeFiles/game.dir/Mesh.cpp.o.d -o CMakeFiles/game.dir/Mesh.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/Mesh.cpp
 
 CMakeFiles/game.dir/Mesh.cpp.i: cmake_force
@@ -100,7 +114,7 @@ CMakeFiles/game.dir/Mesh.cpp.s: cmake_force
 CMakeFiles/game.dir/Pipeline.cpp.o: CMakeFiles/game.dir/flags.make
 CMakeFiles/game.dir/Pipeline.cpp.o: /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.cpp
 CMakeFiles/game.dir/Pipeline.cpp.o: CMakeFiles/game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/game.dir/Pipeline.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/game.dir/Pipeline.cpp.o"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/game.dir/Pipeline.cpp.o -MF CMakeFiles/game.dir/Pipeline.cpp.o.d -o CMakeFiles/game.dir/Pipeline.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.cpp
 
 CMakeFiles/game.dir/Pipeline.cpp.i: cmake_force
@@ -111,10 +125,24 @@ CMakeFiles/game.dir/Pipeline.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/game.dir/Pipeline.cpp.s"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /run/media/ethanw/LinuxGames/Repos/Trolling/Pipeline.cpp -o CMakeFiles/game.dir/Pipeline.cpp.s
 
+CMakeFiles/game.dir/RenderPass.cpp.o: CMakeFiles/game.dir/flags.make
+CMakeFiles/game.dir/RenderPass.cpp.o: /run/media/ethanw/LinuxGames/Repos/Trolling/RenderPass.cpp
+CMakeFiles/game.dir/RenderPass.cpp.o: CMakeFiles/game.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/game.dir/RenderPass.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/game.dir/RenderPass.cpp.o -MF CMakeFiles/game.dir/RenderPass.cpp.o.d -o CMakeFiles/game.dir/RenderPass.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/RenderPass.cpp
+
+CMakeFiles/game.dir/RenderPass.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/game.dir/RenderPass.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /run/media/ethanw/LinuxGames/Repos/Trolling/RenderPass.cpp > CMakeFiles/game.dir/RenderPass.cpp.i
+
+CMakeFiles/game.dir/RenderPass.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/game.dir/RenderPass.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /run/media/ethanw/LinuxGames/Repos/Trolling/RenderPass.cpp -o CMakeFiles/game.dir/RenderPass.cpp.s
+
 CMakeFiles/game.dir/Renderer.cpp.o: CMakeFiles/game.dir/flags.make
 CMakeFiles/game.dir/Renderer.cpp.o: /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.cpp
 CMakeFiles/game.dir/Renderer.cpp.o: CMakeFiles/game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/game.dir/Renderer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/game.dir/Renderer.cpp.o"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/game.dir/Renderer.cpp.o -MF CMakeFiles/game.dir/Renderer.cpp.o.d -o CMakeFiles/game.dir/Renderer.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.cpp
 
 CMakeFiles/game.dir/Renderer.cpp.i: cmake_force
@@ -125,10 +153,24 @@ CMakeFiles/game.dir/Renderer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/game.dir/Renderer.cpp.s"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /run/media/ethanw/LinuxGames/Repos/Trolling/Renderer.cpp -o CMakeFiles/game.dir/Renderer.cpp.s
 
+CMakeFiles/game.dir/Widget.cpp.o: CMakeFiles/game.dir/flags.make
+CMakeFiles/game.dir/Widget.cpp.o: /run/media/ethanw/LinuxGames/Repos/Trolling/Widget.cpp
+CMakeFiles/game.dir/Widget.cpp.o: CMakeFiles/game.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/game.dir/Widget.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/game.dir/Widget.cpp.o -MF CMakeFiles/game.dir/Widget.cpp.o.d -o CMakeFiles/game.dir/Widget.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/Widget.cpp
+
+CMakeFiles/game.dir/Widget.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/game.dir/Widget.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /run/media/ethanw/LinuxGames/Repos/Trolling/Widget.cpp > CMakeFiles/game.dir/Widget.cpp.i
+
+CMakeFiles/game.dir/Widget.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/game.dir/Widget.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /run/media/ethanw/LinuxGames/Repos/Trolling/Widget.cpp -o CMakeFiles/game.dir/Widget.cpp.s
+
 CMakeFiles/game.dir/main.cpp.o: CMakeFiles/game.dir/flags.make
 CMakeFiles/game.dir/main.cpp.o: /run/media/ethanw/LinuxGames/Repos/Trolling/main.cpp
 CMakeFiles/game.dir/main.cpp.o: CMakeFiles/game.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/game.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/game.dir/main.cpp.o"
 	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/game.dir/main.cpp.o -MF CMakeFiles/game.dir/main.cpp.o.d -o CMakeFiles/game.dir/main.cpp.o -c /run/media/ethanw/LinuxGames/Repos/Trolling/main.cpp
 
 CMakeFiles/game.dir/main.cpp.i: cmake_force
@@ -142,22 +184,28 @@ CMakeFiles/game.dir/main.cpp.s: cmake_force
 # Object files for target game
 game_OBJECTS = \
 "CMakeFiles/game.dir/Descriptor.cpp.o" \
+"CMakeFiles/game.dir/FrameBuffer.cpp.o" \
 "CMakeFiles/game.dir/Mesh.cpp.o" \
 "CMakeFiles/game.dir/Pipeline.cpp.o" \
+"CMakeFiles/game.dir/RenderPass.cpp.o" \
 "CMakeFiles/game.dir/Renderer.cpp.o" \
+"CMakeFiles/game.dir/Widget.cpp.o" \
 "CMakeFiles/game.dir/main.cpp.o"
 
 # External object files for target game
 game_EXTERNAL_OBJECTS =
 
 game: CMakeFiles/game.dir/Descriptor.cpp.o
+game: CMakeFiles/game.dir/FrameBuffer.cpp.o
 game: CMakeFiles/game.dir/Mesh.cpp.o
 game: CMakeFiles/game.dir/Pipeline.cpp.o
+game: CMakeFiles/game.dir/RenderPass.cpp.o
 game: CMakeFiles/game.dir/Renderer.cpp.o
+game: CMakeFiles/game.dir/Widget.cpp.o
 game: CMakeFiles/game.dir/main.cpp.o
 game: CMakeFiles/game.dir/build.make
 game: CMakeFiles/game.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable game"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/run/media/ethanw/LinuxGames/Repos/Trolling/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable game"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/game.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

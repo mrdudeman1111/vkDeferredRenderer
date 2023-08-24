@@ -153,6 +153,30 @@ Descriptor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Descriptor.cpp.s
 .PHONY : Descriptor.cpp.s
 
+FrameBuffer.o: FrameBuffer.cpp.o
+.PHONY : FrameBuffer.o
+
+# target to build an object file
+FrameBuffer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/FrameBuffer.cpp.o
+.PHONY : FrameBuffer.cpp.o
+
+FrameBuffer.i: FrameBuffer.cpp.i
+.PHONY : FrameBuffer.i
+
+# target to preprocess a source file
+FrameBuffer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/FrameBuffer.cpp.i
+.PHONY : FrameBuffer.cpp.i
+
+FrameBuffer.s: FrameBuffer.cpp.s
+.PHONY : FrameBuffer.s
+
+# target to generate assembly for a file
+FrameBuffer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/FrameBuffer.cpp.s
+.PHONY : FrameBuffer.cpp.s
+
 Mesh.o: Mesh.cpp.o
 .PHONY : Mesh.o
 
@@ -201,6 +225,30 @@ Pipeline.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Pipeline.cpp.s
 .PHONY : Pipeline.cpp.s
 
+RenderPass.o: RenderPass.cpp.o
+.PHONY : RenderPass.o
+
+# target to build an object file
+RenderPass.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/RenderPass.cpp.o
+.PHONY : RenderPass.cpp.o
+
+RenderPass.i: RenderPass.cpp.i
+.PHONY : RenderPass.i
+
+# target to preprocess a source file
+RenderPass.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/RenderPass.cpp.i
+.PHONY : RenderPass.cpp.i
+
+RenderPass.s: RenderPass.cpp.s
+.PHONY : RenderPass.s
+
+# target to generate assembly for a file
+RenderPass.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/RenderPass.cpp.s
+.PHONY : RenderPass.cpp.s
+
 Renderer.o: Renderer.cpp.o
 .PHONY : Renderer.o
 
@@ -224,6 +272,30 @@ Renderer.s: Renderer.cpp.s
 Renderer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Renderer.cpp.s
 .PHONY : Renderer.cpp.s
+
+Widget.o: Widget.cpp.o
+.PHONY : Widget.o
+
+# target to build an object file
+Widget.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Widget.cpp.o
+.PHONY : Widget.cpp.o
+
+Widget.i: Widget.cpp.i
+.PHONY : Widget.i
+
+# target to preprocess a source file
+Widget.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Widget.cpp.i
+.PHONY : Widget.cpp.i
+
+Widget.s: Widget.cpp.s
+.PHONY : Widget.s
+
+# target to generate assembly for a file
+Widget.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Widget.cpp.s
+.PHONY : Widget.cpp.s
 
 main.o: main.cpp.o
 .PHONY : main.o
@@ -261,15 +333,24 @@ help:
 	@echo "... Descriptor.o"
 	@echo "... Descriptor.i"
 	@echo "... Descriptor.s"
+	@echo "... FrameBuffer.o"
+	@echo "... FrameBuffer.i"
+	@echo "... FrameBuffer.s"
 	@echo "... Mesh.o"
 	@echo "... Mesh.i"
 	@echo "... Mesh.s"
 	@echo "... Pipeline.o"
 	@echo "... Pipeline.i"
 	@echo "... Pipeline.s"
+	@echo "... RenderPass.o"
+	@echo "... RenderPass.i"
+	@echo "... RenderPass.s"
 	@echo "... Renderer.o"
 	@echo "... Renderer.i"
 	@echo "... Renderer.s"
+	@echo "... Widget.o"
+	@echo "... Widget.i"
+	@echo "... Widget.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
